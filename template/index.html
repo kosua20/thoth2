@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>{#BLOG_TITLE}</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=720">
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+		<link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
+		<link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+		<link rel="manifest" href="/manifest.json">
+		<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#a60000">
+		<meta name="theme-color" content="#ffffff">
+		<link rel="stylesheet" href="style.css" title="CSS Style" type="text/css" media="screen">
+		<script src="webgl/gl-matrix-min.js" charset="utf-8"></script>
+		<script src="webgl/webgl-obj-loader.js" charset="utf-8"></script>
+		<script src="webgl/scene.js" charset="utf-8"></script>
+		<link rel="alternate" type="application/rss+xml" href="http://blog.simonrodriguez.fr/feed.xml" />
+	</head>
+	<body>
+		<div class="article">
+			<div id="menu">
+				<a href="http://simonrodriguez.fr">Home</a>
+			</div>
+			<canvas id="gl-canvas" ></canvas>
+			<h1>{#BLOG_TITLE}</h1>
+			<hr>
+
+			<ul>
+			{#ARTICLE_BEGIN}
+			<li>
+				<a href="{#LINK}">
+				<h2>{#TITLE}
+					<div class="subtitle">
+						{#DATE}
+					</div>
+				</h2>
+				{#SUMMARY}
+				</a>
+			</li>
+			{#ARTICLE_END}
+			</ul>
+		</div>
+	</body>
+</html>

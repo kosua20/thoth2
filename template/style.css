@@ -1,0 +1,149 @@
+* {
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-kerning: auto;
+}
+
+/*Theme colors*/
+a:hover, #menu a, h2 {
+	color: #AB1C00;
+}
+
+body, a, .subtitle {
+	color: #555;
+}
+
+#menu a {
+	background-color: white;
+	border: 1px solid #AB1C00;
+}
+
+#menu a:hover {
+	background-color: #AB1C00; 
+	color: white;
+}
+
+/* Body and menu */
+body {
+	background-color: white;
+	font-family: 'Lato', 'Gill Sans', 'Gill Sans MT', 'Calibri', sans-serif;
+	line-height: 150%;
+	font-size: 16px;
+}
+
+#menu a {
+	font-size: 12px;
+	padding: 4px 8px;
+}
+
+a, a:hover {
+	text-decoration: none;
+}
+
+.article {
+	position: relative;
+	max-width:800px;
+	width:90%;
+	margin: auto;
+	text-align: justify;
+	padding-top: 10px;
+	margin-bottom: 50px;
+}
+
+sup, sub {
+	vertical-align: baseline;
+	position: relative;
+	top: -0.4em;
+}
+
+sub {
+	top: 0.4em; 
+}
+
+/* Added */
+
+h1 {
+	text-align: center;
+	font-size: 50px;
+	font-weight: bold;
+	line-height: 100%;
+	margin-bottom: 10px;
+	margin-top:0px;
+	color:black;
+	font-family: 'Alegreya', 'Garamond', 'Baskerville', serif;
+}
+
+#gl-canvas {
+	border: none;
+	z-index: -1;
+	display: block;
+	margin: auto;
+	height: 100px;
+}
+
+ul {
+	list-style-type:none;
+	padding-left: 0px;
+	margin-top: 30px;
+}
+
+li {
+	margin-bottom: 20px;
+}
+
+h2 {
+	margin-bottom: 10px;
+}
+
+.subtitle {
+	position: relative;
+	float: right;
+	font-size: 16px;
+	font-weight: normal;
+	top:4px;
+}
+
+hr {
+	width:120px;
+}
+
+@media (max-width: 750px) {
+	.subtitle { float: none; }
+	#menu a {font-size:30px;}
+	#menu {margin-top:20px;}
+}
+
+/* Fonts */
+@font-face {
+	font-family: 'Alegreya';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Alegreya Regular'), 
+		local('Alegreya-Regular'),
+		url('fonts/Alegreya/Alegreya-Regular.ttf') format('truetype'),
+		url(https://fonts.gstatic.com/s/alegreya/v11/4UaBrEBBsBhlBjvfkSLhx6jj4JN0.woff2) format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: 'Lato';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Lato Regular'), 
+		local('Lato-Regular'), 
+		url('fonts/Lato/Lato-Regular.ttf') format('truetype'),
+		url(https://fonts.gstatic.com/s/lato/v14/S6uyw4BMUTPHjx4wXiWtFCc.woff2) format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: 'Lato';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Lato Regular'), 
+		local('Lato-Regular'), 
+		url('fonts/Lato/Lato-Regular.ttf') format('truetype'),
+		url(https://fonts.gstatic.com/s/lato/v14/S6uyw4BMUTPHjxAwXiWtFCfQ7A.woff2) format('woff2');
+	unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}

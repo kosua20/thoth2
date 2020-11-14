@@ -1,0 +1,160 @@
+* {
+	-webkit-box-sizing: border-box;
+	box-sizing: border-box;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	font-kerning: auto;
+}
+
+/*Theme colors*/
+h1, a, a:hover, #menu a {
+	color: #AB1C00;
+}
+
+body, .header a {
+	color: #555;
+}
+
+#menu a {
+	background-color: white;
+	border: 1px solid #AB1C00;
+}
+
+#menu a:hover {
+	background-color: #AB1C00; 
+	color: white;
+}
+
+/* Article and menu */
+body {
+	background-color: white;
+	font-family: 'Lato', 'Gill Sans', 'Gill Sans MT', 'Calibri', sans-serif;
+	line-height: 150%;
+	font-size: 16px;
+}
+
+#menu a {
+	font-size: 12px;
+	padding: 4px 8px;
+}
+
+a, a:hover {
+	text-decoration: none;
+}
+
+.article {
+	position: relative;
+	max-width:800px;
+	width:90%;
+	margin: auto;
+	text-align: justify;
+	padding-top: 10px;
+	margin-bottom: 50px;
+}
+
+h1 {
+	text-align: left;
+	font-size: 40px;
+	font-weight: bold;
+	line-height: 100%;
+	margin-bottom: 10px;
+}
+
+h2, h3 {
+	margin-top:30px;
+	margin-bottom: -10px;
+}
+
+@media (max-width: 750px) {
+	#menu a {font-size:30px;}
+	#menu {margin-top:20px;}
+}
+
+/* Code, quotes, tables, notations*/
+code {
+	font-family: 'Inconsolata', monospace;
+	overflow: scroll;
+	border-radius: 5px;
+}
+
+blockquote {
+	border-left: 10px solid lightgrey;
+	margin: 1.5em 0px;
+	padding: 0.5em 10px;
+	font-style: italic;
+}
+
+blockquote p {
+  display: inline;
+}
+
+code, blockquote, th {
+	background-color: #eee;
+}
+
+img, video {
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 100%;
+}
+
+sup, sub {
+	vertical-align: baseline;
+	position: relative;
+	top: -0.4em;
+}
+
+sub {
+	top: 0.4em; 
+}
+
+table, th, td {
+	border: 1px solid lightgrey;
+	border-collapse: collapse;
+}
+
+table {
+	margin-top:15px;
+	margin-bottom:15px;
+	width:auto;
+	margin-right:auto;
+	margin-left:auto;
+}
+
+th, td {
+	padding: 4px 6px;
+}
+
+/* Fonts */
+@font-face {
+	font-family: 'Inconsolata';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Inconsolata Regular'), 
+		local('Inconsolata-Regular'), 
+		url('fonts/Inconsolata/Inconsolata-Regular.ttf') format('truetype'),
+		url(https://fonts.gstatic.com/s/inconsolata/v16/QldKNThLqRwH-OJ1UHjlKGlZ5qhExfHw.woff2) format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: 'Lato';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Lato Regular'), 
+		local('Lato-Regular'), 
+		url('fonts/Lato/Lato-Regular.ttf') format('truetype'),
+		url(https://fonts.gstatic.com/s/lato/v14/S6uyw4BMUTPHjx4wXiWtFCc.woff2) format('woff2');
+	unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+	font-family: 'Lato';
+	font-style: normal;
+	font-weight: 400;
+	src: local('Lato Regular'), 
+		local('Lato-Regular'), 
+		url('fonts/Lato/Lato-Regular.ttf') format('truetype'),
+		url(https://fonts.gstatic.com/s/lato/v14/S6uyw4BMUTPHjxAwXiWtFCfQ7A.woff2) format('woff2');
+	unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
