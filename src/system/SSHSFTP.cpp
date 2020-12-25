@@ -1,7 +1,8 @@
 
 #include <libssh/libssh.h>
 #include <libssh/sftp.h>
-
+#include <fcntl.h>
+#include <sys/stat.h>
 #include "system/SSHSFTP.hpp"
 #include "system/TextUtilities.hpp"
 
@@ -114,7 +115,13 @@ bool Server::copyItem(const fs::path & src, const fs::path & dst, bool force){
 		if(itemExists(dst)){
 			return true;
 		}
-		sftp_file dstFile = sftp_open(_sftp, dst.c_str(), O_WRONLY | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#ifdef _WIN32
+		// Untested, might have to define and use the POSIX values if that's what the server expects.
+		mode_t mode = _S_IREAD | _S_IWRITE;
+#else
+		mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
+#endif
+		sftp_file dstFile = sftp_open(_sftp, dst.c_str(), O_WRONLY | O_CREAT, mode);
 		if(!dstFile){
 			res = false;
 		} else {
@@ -150,7 +157,13 @@ bool Server::createDirectory(const fs::path & path, bool force){
 		// Delete the directory first.
 		Server::removeItem(path);
 	}
-	const int res =  sftp_mkdir(_sftp, path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+#ifdef _WIN32
+	// Untested, might have to define and use the POSIX values if that's what the server expects.
+	mode_t mode = _S_IREAD | _S_IWRITE;
+#else
+	mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
+#endif
+	const int res =  sftp_mkdir(_sftp, path.c_str(), mode);
 	return res == 0;
 }
 

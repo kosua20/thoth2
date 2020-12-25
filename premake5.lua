@@ -41,8 +41,14 @@ workspace("Thoth")
 		removefiles({"**.DS_STORE", "**.thumbs"})
 		
 		filter("system:macosx")
-			libdirs({"libs/libssh/"})
+			sysincludedirs({ "libs/libssh/macos/include" })
+			libdirs({"libs/libssh/macos/lib/"})
 			links({"ssh", "ssl", "z", "crypto", "Security.framework"})
+		filter("system:windows")
+			sysincludedirs({ "libs/libssh/win/include" })
+			libdirs({"libs/libssh/win/lib/"})
+			links({"ssh", "mbedcrypto", "mbedtls", "mbedx509", "wsock32", "ws2_32", "pthreadVC3"})
+			
 		-- visual studio filters
 		filter("action:vs*")
 			defines({ "_CRT_SECURE_NO_WARNINGS" })  
