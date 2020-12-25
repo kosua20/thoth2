@@ -151,7 +151,7 @@ bool System::writeStringToFile(const std::string & str, const fs::path & path){
 void System::setStdinPrintback(bool enable){
 #ifdef _WIN32
 	// \warn Untested.
-	HANDLE hstdin = GetStdHandel(STD_INPUT_HANDLE);
+	HANDLE hstdin = GetStdHandle(STD_INPUT_HANDLE);
 	DWORD mode;
 	GetConsoleMode(hstdin, &mode);
 	if(enable){

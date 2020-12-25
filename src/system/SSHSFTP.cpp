@@ -1,9 +1,10 @@
 
+#include <libssh/libssh.h>
+#include <libssh/sftp.h>
+
 #include "system/SSHSFTP.hpp"
 #include "system/TextUtilities.hpp"
 
-#include <libssh/libssh.h>
-#include <libssh/sftp.h>
 
 
 #ifdef _WIN32

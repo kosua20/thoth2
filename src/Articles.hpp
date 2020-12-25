@@ -3,6 +3,7 @@
 #include "Common.hpp"
 #include "Settings.hpp"
 #include <optional>
+#include <ctime>
 
 class Date {
 public:

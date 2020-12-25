@@ -103,6 +103,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <wchar.h>
+#include <initguid.h>
 #include <winioctl.h>
 #else
 #include <dirent.h>
