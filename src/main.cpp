@@ -58,6 +58,12 @@ public:
 				mode &= ~INDEX;
 				mode |= RESOURCES;
 			}
+			if(arg.key == "index-only" || arg.key == "i") {
+				mode &= ~ARTICLES;
+				mode &= ~DRAFTS;
+				mode &= ~RESOURCES;
+				mode |= INDEX;
+			}
 			if(arg.key == "force" || arg.key == "f") {
 				mode |= FORCE;
 			}
@@ -91,6 +97,7 @@ public:
 		registerArgument("scribe", "", "Combines \"generate\" and \"upload\" with the corresponding config and options.");
 		
 		registerSection("Modifiers");
+		registerArgument("index-only", "i", "Update index pages only.");
 		registerArgument("drafts-only", "d", "Process drafts only.");
 		registerArgument("resources-only", "r", "Update resources only.");
 		registerArgument("force", "f", "Force generation/upload of all blog files");
@@ -135,9 +142,10 @@ void upload(const uint mode, const Settings & settings, Server & server){
 	
 	if(mode & INDEX){
 		Log::Info() << Log::Upload << "Uploading index pages...";
-		const bool st0 = server.copyItem(src / "index.html", dst / "index.html", force);
-		const bool st1 = server.copyItem(src / "index-drafts.html", dst / "index-drafts.html", force);
-		const bool st2 = server.copyItem(src / "feed.xml", dst / "feed.xml", force);
+		// Index pages are always forced to update.
+		const bool st0 = server.copyItem(src / "index.html", dst / "index.html", true);
+		const bool st1 = server.copyItem(src / "index-drafts.html", dst / "index-drafts.html", true);
+		const bool st2 = server.copyItem(src / "feed.xml", dst / "feed.xml", true);
 		if(st0 && st1 && st2){
 			Log::Info() << " done." << std::endl;
 		} else {

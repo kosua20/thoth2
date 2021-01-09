@@ -6,10 +6,31 @@
 #include "system/SSHSFTP.hpp"
 #include "system/TextUtilities.hpp"
 
-
-
 #ifdef _WIN32
 #define strncasecmp _strnicmp
+#endif
+
+/* Could be useful on windows. */
+#if 0
+/* Open mode */
+#define O_WRONLY        0x0001          /* open for writing only */
+#define O_CREAT         0x0200      	/* create if nonexistant */
+/* File mode */
+/* Read, write, execute/search by owner */
+#define S_IRWXU         0000700         /* [XSI] RWX mask for owner */
+#define S_IRUSR         0000400         /* [XSI] R for owner */
+#define S_IWUSR         0000200         /* [XSI] W for owner */
+#define S_IXUSR         0000100         /* [XSI] X for owner */
+/* Read, write, execute/search by group */
+#define S_IRWXG         0000070         /* [XSI] RWX mask for group */
+#define S_IRGRP         0000040         /* [XSI] R for group */
+#define S_IWGRP         0000020         /* [XSI] W for group */
+#define S_IXGRP         0000010         /* [XSI] X for group */
+/* Read, write, execute/search by others */
+#define S_IRWXO         0000007         /* [XSI] RWX mask for other */
+#define S_IROTH         0000004         /* [XSI] R for other */
+#define S_IWOTH         0000002         /* [XSI] W for other */
+#define S_IXOTH         0000001         /* [XSI] X for other */
 #endif
 
 #define CREATE_AUTH
@@ -156,6 +177,10 @@ bool Server::createDirectory(const fs::path & path, bool force){
 	if(force && itemExists(path)){
 		// Delete the directory first.
 		Server::removeItem(path);
+	}
+	// Re-check, if the directory still exists after a potential forced deletion, just skip.
+	if(itemExists(path)){
+		return true;
 	}
 #ifdef _WIN32
 	// Untested, might have to define and use the POSIX values if that's what the server expects.
