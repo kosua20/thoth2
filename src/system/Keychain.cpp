@@ -5,17 +5,30 @@
 #include <Security/Security.h>
 #endif
 
-
+#ifdef _WIN32
+#include <wincred.h>
+#endif
 
 bool Keychain::getPassword(const fs::path & server, const std::string & user, std::string & password){
 		
-#ifdef _MACOS
+#if defined(_MACOS)
 	UInt32 passLength;
 	char * passBuffer;
 	const std::string serverName = server.string();
 	OSStatus stat = SecKeychainFindInternetPassword(nullptr, serverName.size(), serverName.c_str(), 0, nullptr, user.size(), user.c_str(), 0, nullptr, 0, kSecProtocolTypeSSH, kSecAuthenticationTypeDefault, &passLength, (void**)&passBuffer, nullptr);
 	if(stat == 0){
 		password = std::string(passBuffer, passLength);
+		return true;
+	}
+#elif defined(_WIN32)
+	const std::string serverName = "Thoth_" + server.string();
+	const std::wstring targetName = System::widen(serverName);
+	PCREDENTIALW credential;
+	BOOL stat = CredReadW(targetName.c_str(), CRED_TYPE_GENERIC, 0, &credential);
+	if(stat){
+		std::wstring pass((wchar_t const * const)credential->CredentialBlob, credential->CredentialBlobSize / sizeof(wchar_t));
+		password = System::narrow(pass);
+		CredFree(credential);
 		return true;
 	}
 #else
@@ -26,8 +39,8 @@ bool Keychain::getPassword(const fs::path & server, const std::string & user, st
 
 
 bool Keychain::setPassword(const fs::path & server, const std::string & user, const std::string & password){
-	
-#ifdef _MACOS
+
+#if defined(_MACOS)
 	SecKeychainItemRef item;
 	const std::string serverName = server.string();
 	OSStatus stat = SecKeychainFindInternetPassword(nullptr, serverName.size(), serverName.c_str(), 0, nullptr, user.size(), user.c_str(), 0, nullptr, 0, kSecProtocolTypeSSH, kSecAuthenticationTypeDefault, 0, nullptr, &item);
@@ -39,6 +52,21 @@ bool Keychain::setPassword(const fs::path & server, const std::string & user, co
 		stat = SecKeychainAddInternetPassword(nullptr, serverName.size(), serverName.c_str(), 0, nullptr, user.size(), user.c_str(), 0, nullptr, 0, kSecProtocolTypeSSH, kSecAuthenticationTypeDefault, password.size(), password.c_str(), nullptr);
 	}
 	return stat == 0;
+#elif defined(_WIN32)
+	const std::string serverName = "Thoth_" + server.string();
+	const std::wstring targetName = System::widen(serverName);
+	const std::wstring pass = System::widen(password);
+
+	CREDENTIALW credsToAdd = {};
+	credsToAdd.Flags = 0;
+	credsToAdd.Type = CRED_TYPE_GENERIC;
+	credsToAdd.TargetName = targetName.c_str();
+	credsToAdd.CredentialBlob = (LPBYTE)&(pass.c_str());
+	credsToAdd.CredentialBlobSize = sizeof(pass[0]) * pass.size();
+	credsToAdd.Persist = CRED_PERSIST_LOCAL_MACHINE;
+	// This will overwrite the credential if it already exists.
+	BOOL stat = CredWrite(&credsToAdd, 0);
+	return stat;
 #else
 	Log::Error() << Log::Password << "No keychain available on your platform." << std::endl;
 #endif
