@@ -139,7 +139,7 @@ bool Server::copyItem(const fs::path & src, const fs::path & dst, bool force){
 		if(!dstFile){
 			res = false;
 		} else {
-			std::ifstream srcFile(src.string(), std::ios::in | std::ios::binary);
+			std::ifstream srcFile(System::widen(src.string()), std::ios::in | std::ios::binary);
 			std::vector<char> buffer(4096);
 			while(srcFile.read(buffer.data(), buffer.size())){
 				const ssize_t len = ssize_t(buffer.size());

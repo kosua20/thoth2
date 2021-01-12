@@ -1,4 +1,5 @@
 #include "system/Logger.hpp"
+#include "system/System.hpp"
 #include <ctime>
 #include <iostream>
 #include <fstream>
@@ -65,7 +66,7 @@ void Log::setFile(const std::string & filePath, bool flushExisting) {
 	if(_file.is_open()) {
 		_file.close();
 	}
-	_file.open(filePath, std::ofstream::app);
+	_file.open(System::widen(filePath), std::ofstream::app);
 	if(_file.is_open()) {
 		_file << "-- New session - " << time(nullptr) << " -------------------------------" << std::endl;
 		_useColors = false;

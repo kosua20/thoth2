@@ -16,14 +16,17 @@ Settings::Settings(const fs::path & path){
 
 bool Settings::load(){
 	Log::Info() << Log::Load << "Loading settings from " << _selfPath << "." << std::endl;
-	
-	std::ifstream file(_selfPath);
-	if(!file.is_open()){
+
+	std::string fileContent = System::loadStringFromFile(_selfPath);
+
+	if(fileContent.empty()){
 		Log::Error() << "Unable to load config file at path " << _selfPath <<"." << std::endl;
 		return false;
 	}
-	std::string str;
-	while(std::getline(file, str)){
+	TextUtilities::replace(fileContent, "\r\n", "\n");
+	const auto lines = TextUtilities::split(fileContent, "\n", true);
+	for(const auto & line : lines){
+		const std::string str = TextUtilities::trim(line, "\n\r\t ");
 		if(TextUtilities::hasPrefix(str, "#") || TextUtilities::hasPrefix(str, "_")){
 			continue;
 		}
@@ -88,12 +91,11 @@ bool Settings::load(){
 			}
 		}
 	}
-	file.close();
 	return true;
 }
 
 void Settings::save(){
-	std::ofstream file(_selfPath);
+	std::ofstream file(System::widen(_selfPath));
 	if(!file.is_open()){
 		Log::Error() << "Unable to write config file at path \"" << _selfPath << "\"." << std::endl;
 	}
