@@ -10,23 +10,20 @@
 #define strncasecmp _strnicmp
 #endif
 
-/* Could be useful on windows. */
-#if 0
 /* Open mode */
-#define O_WRONLY        0x0001          /* open for writing only */
-#define O_CREAT         0x0200      	/* create if nonexistant */
+//#define O_WRONLY        0x0001        /* open for writing only */
+//#define O_CREAT         0x0200      	/* create if nonexistant */
+
+#ifdef _WIN32
 /* File mode */
-/* Read, write, execute/search by owner */
 #define S_IRWXU         0000700         /* [XSI] RWX mask for owner */
 #define S_IRUSR         0000400         /* [XSI] R for owner */
 #define S_IWUSR         0000200         /* [XSI] W for owner */
 #define S_IXUSR         0000100         /* [XSI] X for owner */
-/* Read, write, execute/search by group */
 #define S_IRWXG         0000070         /* [XSI] RWX mask for group */
 #define S_IRGRP         0000040         /* [XSI] R for group */
 #define S_IWGRP         0000020         /* [XSI] W for group */
 #define S_IXGRP         0000010         /* [XSI] X for group */
-/* Read, write, execute/search by others */
 #define S_IRWXO         0000007         /* [XSI] RWX mask for other */
 #define S_IROTH         0000004         /* [XSI] R for other */
 #define S_IWOTH         0000002         /* [XSI] W for other */
@@ -136,12 +133,8 @@ bool Server::copyItem(const fs::path & src, const fs::path & dst, bool force){
 		if(itemExists(dst)){
 			return true;
 		}
-#ifdef _WIN32
-		// Untested, might have to define and use the POSIX values if that's what the server expects.
-		mode_t mode = _S_IREAD | _S_IWRITE;
-#else
+
 		mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-#endif
 		sftp_file dstFile = sftp_open(_sftp, dst.c_str(), O_WRONLY | O_CREAT, mode);
 		if(!dstFile){
 			res = false;
@@ -182,12 +175,8 @@ bool Server::createDirectory(const fs::path & path, bool force){
 	if(itemExists(path)){
 		return true;
 	}
-#ifdef _WIN32
-	// Untested, might have to define and use the POSIX values if that's what the server expects.
-	mode_t mode = _S_IREAD | _S_IWRITE;
-#else
+
 	mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
-#endif
 	const int res =  sftp_mkdir(_sftp, path.c_str(), mode);
 	return res == 0;
 }
