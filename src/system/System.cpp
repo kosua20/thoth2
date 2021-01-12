@@ -9,27 +9,26 @@
 
 #ifdef _WIN32
 
-WCHAR * widen(const std::string & str) {
+std::wstring System::widen(const std::string & str) {
 	const int size = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, nullptr, 0);
-	WCHAR * arr	= new WCHAR[size];
-	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, static_cast<LPWSTR>(arr), size);
-	// \warn Will leak on Windows.
-	return arr;
+	std::wstring res(size - 1, 0);
+	MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, &res[0], size);
+	return res;
 }
 
-std::string narrow(WCHAR * str) {
-	const int size = WideCharToMultiByte(CP_UTF8, 0, str, -1, nullptr, 0, nullptr, nullptr);
+std::string System::narrow(const std::wstring & str) {
+	const int size = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, nullptr, 0, nullptr, nullptr);
 	std::string res(size - 1, 0);
-	WideCharToMultiByte(CP_UTF8, 0, str, -1, &res[0], size, nullptr, nullptr);
+	WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, &res[0], size, nullptr, nullptr);
 	return res;
 }
 
 #else
 
-const char * widen(const std::string & str) {
-	return str.c_str();
+std::string System::widen(const std::string & str) {
+	return str;
 }
-std::string narrow(char * str) {
+std::string System::narrow(const std::string& str) {
 	return std::string(str);
 }
 
@@ -123,7 +122,7 @@ bool System::isFile(const fs::path & path){
 }
 
 std::string System::loadStringFromFile(const fs::path & path){
-	std::ifstream file(widen(path.string()));
+	std::ifstream file(System::widen(path.string()));
 	if(file.bad() || file.fail()) {
 		Log::Error() << "Unable to load file at path " << path << "." << std::endl;
 		return "";
@@ -138,7 +137,7 @@ std::string System::loadStringFromFile(const fs::path & path){
 }
 
 bool System::writeStringToFile(const std::string & str, const fs::path & path){
-	std::ofstream file(widen(path.string()));
+	std::ofstream file(System::widen(path.string()));
 	if(file.bad() || file.fail()) {
 		Log::Error() << "Unable to write to file at path " << path << "." << std::endl;
 		return false;

@@ -37,5 +37,17 @@ public:
 	static bool writeStringToFile(const std::string & str, const fs::path & path);
 	
 	static void setStdinPrintback(bool enable);
+
+#ifdef _WIN32
+	static std::wstring widen(const std::string & str);
+
+	static std::string narrow(const std::wstring & str);
+
+#else
+	static std::string widen(const std::string & str);
+
+	static std::string narrow(const std::string & str);
+
+#endif
 	
 };
