@@ -10,27 +10,23 @@
 #define strncasecmp _strnicmp
 #endif
 
-#ifdef _WIN32
+/* Platform independent file and open modes. */
 /* Open mode */
-#define O_WRONLY_INT        0x0001        /* open for writing only */
-#define O_RDWR_INT			0x0002        /* open for writing only */
-#define O_CREAT_INT         0x0200      	/* create if nonexistant */
-#define O_TRUNC_INT			0x0400
-
+#define O_WRONLY_TH  0x0001    /* open for writing only */
+#define O_CREAT_TH   0x0200    /* create if nonexistant */
 /* File mode */
-#define S_IRWXU_INT         0000700         /* [XSI] RWX mask for owner */
-#define S_IRUSR_INT         0000400         /* [XSI] R for owner */
-#define S_IWUSR_INT         0000200         /* [XSI] W for owner */
-#define S_IXUSR_INT         0000100         /* [XSI] X for owner */
-#define S_IRWXG_INT         0000070         /* [XSI] RWX mask for group */
-#define S_IRGRP_INT         0000040         /* [XSI] R for group */
-#define S_IWGRP_INT         0000020         /* [XSI] W for group */
-#define S_IXGRP_INT         0000010         /* [XSI] X for group */
-#define S_IRWXO_INT         0000007         /* [XSI] RWX mask for other */
-#define S_IROTH_INT         0000004         /* [XSI] R for other */
-#define S_IWOTH_INT         0000002         /* [XSI] W for other */
-#define S_IXOTH_INT         0000001         /* [XSI] X for other */
-#endif
+#define S_IRWXU_TH   0000700   /* [XSI] RWX mask for owner */
+#define S_IRUSR_TH   0000400   /* [XSI] R for owner */
+#define S_IWUSR_TH   0000200   /* [XSI] W for owner */
+#define S_IXUSR_TH   0000100   /* [XSI] X for owner */
+#define S_IRWXG_TH   0000070   /* [XSI] RWX mask for group */
+#define S_IRGRP_TH   0000040   /* [XSI] R for group */
+#define S_IWGRP_TH   0000020   /* [XSI] W for group */
+#define S_IXGRP_TH   0000010   /* [XSI] X for group */
+#define S_IRWXO_TH   0000007   /* [XSI] RWX mask for other */
+#define S_IROTH_TH   0000004   /* [XSI] R for other */
+#define S_IWOTH_TH   0000002   /* [XSI] W for other */
+#define S_IXOTH_TH   0000001   /* [XSI] X for other */
 
 #define CREATE_AUTH
 
@@ -137,8 +133,8 @@ bool Server::copyItem(const fs::path & src, const fs::path & dst, bool force){
 			return true;
 		}
 
-		mode_t mode = S_IRUSR_INT | S_IWUSR_INT | S_IRGRP_INT | S_IROTH_INT;
-		sftp_file dstFile = sftp_open(_sftp, dst.c_str(), O_RDWR_INT | O_CREAT_INT | O_TRUNC_INT, mode);
+		mode_t mode = S_IRUSR_TH | S_IWUSR_TH | S_IRGRP_TH | S_IROTH_TH;
+		sftp_file dstFile = sftp_open(_sftp, dst.c_str(), O_WRONLY_TH | O_CREAT_TH, mode);
 		if(!dstFile){
 			res = false;
 		} else {
@@ -179,7 +175,7 @@ bool Server::createDirectory(const fs::path & path, bool force){
 		return true;
 	}
 
-	mode_t mode = S_IRWXU_INT | S_IRGRP_INT | S_IXGRP_INT | S_IROTH_INT | S_IXOTH_INT;
+	mode_t mode = S_IRWXU_TH | S_IRGRP_TH | S_IXGRP_TH | S_IROTH_TH | S_IXOTH_TH;
 	const int res =  sftp_mkdir(_sftp, path.c_str(), mode);
 	return res == 0;
 }
