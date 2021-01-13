@@ -10,30 +10,33 @@
 #define strncasecmp _strnicmp
 #endif
 
-/* Open mode */
-//#define O_WRONLY        0x0001        /* open for writing only */
-//#define O_CREAT         0x0200      	/* create if nonexistant */
-
 #ifdef _WIN32
+/* Open mode */
+#define O_WRONLY_INT        0x0001        /* open for writing only */
+#define O_RDWR_INT			0x0002        /* open for writing only */
+#define O_CREAT_INT         0x0200      	/* create if nonexistant */
+#define O_TRUNC_INT			0x0400
+
 /* File mode */
-#define S_IRWXU         0000700         /* [XSI] RWX mask for owner */
-#define S_IRUSR         0000400         /* [XSI] R for owner */
-#define S_IWUSR         0000200         /* [XSI] W for owner */
-#define S_IXUSR         0000100         /* [XSI] X for owner */
-#define S_IRWXG         0000070         /* [XSI] RWX mask for group */
-#define S_IRGRP         0000040         /* [XSI] R for group */
-#define S_IWGRP         0000020         /* [XSI] W for group */
-#define S_IXGRP         0000010         /* [XSI] X for group */
-#define S_IRWXO         0000007         /* [XSI] RWX mask for other */
-#define S_IROTH         0000004         /* [XSI] R for other */
-#define S_IWOTH         0000002         /* [XSI] W for other */
-#define S_IXOTH         0000001         /* [XSI] X for other */
+#define S_IRWXU_INT         0000700         /* [XSI] RWX mask for owner */
+#define S_IRUSR_INT         0000400         /* [XSI] R for owner */
+#define S_IWUSR_INT         0000200         /* [XSI] W for owner */
+#define S_IXUSR_INT         0000100         /* [XSI] X for owner */
+#define S_IRWXG_INT         0000070         /* [XSI] RWX mask for group */
+#define S_IRGRP_INT         0000040         /* [XSI] R for group */
+#define S_IWGRP_INT         0000020         /* [XSI] W for group */
+#define S_IXGRP_INT         0000010         /* [XSI] X for group */
+#define S_IRWXO_INT         0000007         /* [XSI] RWX mask for other */
+#define S_IROTH_INT         0000004         /* [XSI] R for other */
+#define S_IWOTH_INT         0000002         /* [XSI] W for other */
+#define S_IXOTH_INT         0000001         /* [XSI] X for other */
 #endif
 
 #define CREATE_AUTH
 
 Server::Server(const std::string & domain, const std::string & user, const int port){
-	
+
+	ssh_init();
 	_ssh = ssh_new();
 	if(!_ssh) {
 		Log::Error() << Log::Server << "Unable to create SSH connection." << std::endl;
@@ -134,8 +137,8 @@ bool Server::copyItem(const fs::path & src, const fs::path & dst, bool force){
 			return true;
 		}
 
-		mode_t mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
-		sftp_file dstFile = sftp_open(_sftp, dst.c_str(), O_WRONLY | O_CREAT, mode);
+		mode_t mode = S_IRUSR_INT | S_IWUSR_INT | S_IRGRP_INT | S_IROTH_INT;
+		sftp_file dstFile = sftp_open(_sftp, dst.c_str(), O_RDWR_INT | O_CREAT_INT | O_TRUNC_INT, mode);
 		if(!dstFile){
 			res = false;
 		} else {
@@ -176,7 +179,7 @@ bool Server::createDirectory(const fs::path & path, bool force){
 		return true;
 	}
 
-	mode_t mode = S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
+	mode_t mode = S_IRWXU_INT | S_IRGRP_INT | S_IXGRP_INT | S_IROTH_INT | S_IXOTH_INT;
 	const int res =  sftp_mkdir(_sftp, path.c_str(), mode);
 	return res == 0;
 }
