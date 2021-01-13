@@ -12,6 +12,11 @@
 #	include <unistd.h>
 #endif
 
+// Fix for Windows headers.
+#ifdef ERROR
+#	undef ERROR
+#endif
+
 // We statically initialize the default logger.
 // We don't really care about its exact construction/destruction moments,
 // but we want it to always be created.
