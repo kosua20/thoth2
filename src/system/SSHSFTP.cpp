@@ -1,19 +1,16 @@
 
 #include <libssh/libssh.h>
 #include <libssh/sftp.h>
-#include <fcntl.h>
 #include <sys/stat.h>
 #include "system/SSHSFTP.hpp"
 #include "system/TextUtilities.hpp"
 
 #ifdef _WIN32
+#include <fcntl.h>
 #define strncasecmp _strnicmp
 #endif
 
-/* Platform independent file and open modes. */
-/* Open mode */
-#define O_WRONLY_TH  0x0001    /* open for writing only */
-#define O_CREAT_TH   0x0200    /* create if nonexistant */
+/* Platform independent file modes. */
 /* File mode */
 #define S_IRWXU_TH   0000700   /* [XSI] RWX mask for owner */
 #define S_IRUSR_TH   0000400   /* [XSI] R for owner */
@@ -134,7 +131,7 @@ bool Server::copyItem(const fs::path & src, const fs::path & dst, bool force){
 		}
 
 		mode_t mode = S_IRUSR_TH | S_IWUSR_TH | S_IRGRP_TH | S_IROTH_TH;
-		sftp_file dstFile = sftp_open(_sftp, dst.c_str(), O_WRONLY_TH | O_CREAT_TH, mode);
+		sftp_file dstFile = sftp_open(_sftp, dst.c_str(), O_WRONLY | O_CREAT, mode);
 		if(!dstFile){
 			res = false;
 		} else {
