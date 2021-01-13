@@ -60,7 +60,7 @@ public:
 		return _ftpDomain;
 	}
 	
-	const fs::path & ftpPath() const {
+	const std::string & ftpPath() const {
 		return _ftpPath;
 	};
 
@@ -106,7 +106,7 @@ private:
 	
 	std::string _ftpDomain;
 	
-	fs::path _ftpPath;
+	std::string _ftpPath;
     /// The username to use to connect to the SFTP server.
 	std::string _ftpUsername = "";
     /// The password to use to connect to the SFTP server (if stored in the configuration).

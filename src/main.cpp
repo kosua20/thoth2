@@ -226,7 +226,7 @@ int main(int argc, char** argv){
 		System::createDirectory(settings.outputPath());
 		System::createDirectory(settings.resourcesPath());
 		settings.save();
-		Log::Info() << "You can now fill in the informations in " << settings.selfPath() << " then use thoth --set-password " << settings.selfPath().string() << " to securely store the SFTP password in the system keychain. You should also put the template files (index.html, article.html, and optionally syntax.html) in " << settings.selfPath().string() << "/template/." << std::endl;
+		Log::Info() << "You can now fill in the informations in " << settings.selfPath() << " then use thoth --set-password --path " << settings.selfPath().string() << " to securely store the SFTP password in the system keychain. You should also put the template files (index.html, article.html, and optionally syntax.html) in " << settings.selfPath().string() << "/template/." << std::endl;
 		return 0;
 	}
 	
@@ -242,13 +242,13 @@ int main(int argc, char** argv){
 			Log::Error() << Log::Password << "Unable to save password to system keychain, fill the ftpPassword field in the config file as a fallback." << std::endl;
 			return 4;
 		}
-		Log::Info() << Log::Password << "Saved! You can now test the connection using thoth --test " << settings.selfPath().string() << std::endl;
+		Log::Info() << Log::Password << "Saved! You can now test the connection using thoth --test --path " << settings.selfPath().string() << std::endl;
 		return 0;
 	}
 	
 	if(config.action & TEST){
 		Log::Info() << Log::Config << "Configuration contains: " << std::endl << settings.str(false) << std::endl;
-		Log::Info() << Log::Server << "Attempting to connect to " << settings.ftpUsername() << "@" << settings.ftpDomain() << ":" << settings.ftpPath().string() << std::endl;
+		Log::Info() << Log::Server << "Attempting to connect to " << settings.ftpUsername() << "@" << settings.ftpDomain() << ":" << settings.ftpPath() << std::endl;
 		// Test connection to SFTP.
 		Server server(settings.ftpDomain(), settings.ftpUsername(), settings.ftpPort());
 		const bool res = server.authenticate(settings.ftpPassword());
@@ -269,7 +269,7 @@ int main(int argc, char** argv){
 	}
 	
 	if(config.action & UPLOAD){
-		Log::Info() << Log::Upload << "Connecting to " << settings.ftpUsername() << "@" << settings.ftpDomain() << ":" << settings.ftpPath().string() << "." << std::endl;
+		Log::Info() << Log::Upload << "Connecting to " << settings.ftpUsername() << "@" << settings.ftpDomain() << ":" << settings.ftpPath() << "." << std::endl;
 		Server server(settings.ftpDomain(), settings.ftpUsername(), settings.ftpPort());
 		const bool res = server.authenticate(settings.ftpPassword());
 		if(!res){

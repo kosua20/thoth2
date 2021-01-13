@@ -32,12 +32,14 @@ bool Settings::load(){
 		}
 		auto tokens = TextUtilities::split(str, ":", true);
 		if(tokens.size() > 1){
-			
-			for(size_t i = 0; i < tokens.size(); ++i){
-				tokens[i] = TextUtilities::trim(tokens[i], "\t\r\n ");
+			const auto key = TextUtilities::trim(tokens[0], "\t\r\n ");
+
+			// Re-merge all following tokens.
+			std::string value = tokens[1];
+			for(size_t i = 2; i < tokens.size(); ++i){
+				value.append(":" + tokens[i]);
 			}
-			const auto & key = tokens[0];
-			const auto & value = tokens[1];
+			value = TextUtilities::trim( value, "\t\r\n " );
 			if(value.empty()){
 				continue;
 			}
@@ -58,24 +60,22 @@ bool Settings::load(){
 			} else if(key == "imagesLinks"){
 				_imagesLinks = (value=="true") || (value=="True") || (value=="yes") || (value=="Yes") || (value=="1");
 			} else if(key == "ftpAdress"){
-				std::vector<std::string> values;
-				values.insert(values.end(), tokens.begin()+1, tokens.end());
-				std::string path = TextUtilities::join(values, ":");
-				TextUtilities::replace(path, "sftp://", "");
-				TextUtilities::replace(path, "ssh://", "");
-				TextUtilities::replace(path, "ftp://", "");
+				
+				TextUtilities::replace(value, "sftp://", "");
+				TextUtilities::replace(value, "ssh://", "");
+				TextUtilities::replace(value, "ftp://", "");
 				// Two cases
-				const std::string::size_type colPos = path.find(":");
-				const std::string::size_type slaPos = path.find("/");
+				const std::string::size_type colPos = value.find(":");
+				const std::string::size_type slaPos = value.find("/");
 				std::string domain, dir;
 				if(colPos != std::string::npos){
-					domain = path.substr(0, colPos);
-					dir = path.substr(colPos+1);
+					domain = value.substr(0, colPos);
+					dir = value.substr(colPos+1);
 				} else if(slaPos != std::string::npos){
-					domain = path.substr(0, slaPos);
-					dir = path.substr(slaPos);
+					domain = value.substr(0, slaPos);
+					dir = value.substr(slaPos);
 				} else {
-					domain = path;
+					domain = value;
 					dir = "/";
 				}
 				_ftpDomain = domain;
@@ -153,7 +153,7 @@ std::string Settings::str(bool includeHelp){
 	}
 	str << "ftpAdress" << ":\t\t";
 	if(!_ftpDomain.empty() || !_ftpPath.empty()){
-		str << _ftpDomain << ":" << _ftpPath.string();
+		str << _ftpDomain << ":" << _ftpPath;
 	}
 	str << "\n";
 	
@@ -191,7 +191,7 @@ std::string Settings::ftpPassword() const {
 			return pass;
 		} else {
 			Log::Info() << std::endl;
-			Log::Error() << Log::Password << "Failure, define the password with thoth --set-password " << _selfPath.string() << ", or if keychain is not supported on your platform, by setting the ftpPassword field in the config file." << std::endl;
+			Log::Error() << Log::Password << "Failure, define the password with thoth --set-password --path " << _selfPath.string() << ", or if keychain is not supported on your platform, by setting the ftpPassword field in the config file." << std::endl;
 		}
 	}
 	return _ftpPassword;
