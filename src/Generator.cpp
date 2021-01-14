@@ -107,7 +107,7 @@ void Generator::renderPage(const Article & article, Page & page){
 	TextUtilities::replace(html, "{#DATE}", article.dateStr());
 	TextUtilities::replace(html, "{#AUTHOR}", article.author());
 	TextUtilities::replace(html, "{#BLOG_TITLE}", _settings.blogTitle());
-	TextUtilities::replace(html, "{#LINK}", page.location.string());
+	TextUtilities::replace(html, "{#LINK}", page.location.generic_string());
 	TextUtilities::replace(html, "{#SUMMARY}", page.summary);
 	TextUtilities::replace(html, "{#AUTHOR}", article.author());
 	
@@ -136,7 +136,7 @@ void Generator::renderPage(const Article & article, Page & page){
 			const fs::path locPath = article.url() / srcPath.filename();
 			const fs::path dstPath = fs::path(dir) / locPath;
 			page.files.push_back({srcPath, dstPath});
-			TextUtilities::replace(page.content, srcLink, locPath.string());
+			TextUtilities::replace(page.content, srcLink, locPath.generic_string());
 		}
 		srcPos = content.find("src=\"", endPos);
 	}
@@ -225,7 +225,7 @@ void Generator::generateIndexPages(std::vector<Generator::Page> & pages){
 		TextUtilities::replace(html, "{#TITLE}", article.title());
 		TextUtilities::replace(html, "{#DATE}", article.dateStr());
 		TextUtilities::replace(html, "{#AUTHOR}", article.author());
-		TextUtilities::replace(html, "{#LINK}", page.location.string());
+		TextUtilities::replace(html, "{#LINK}", page.location.generic_string());
 		TextUtilities::replace(html, "{#SUMMARY}", page.summary);
 		html.append("\n");
 		
@@ -234,7 +234,7 @@ void Generator::generateIndexPages(std::vector<Generator::Page> & pages){
 		
 		if(article.type() == Article::Public){
 			const std::string dateStr = article.date().value().str(format, "en_US");
-			const std::string url = "http://" + _settings.siteRoot() + "/" + page.location.string();
+			const std::string url = "http://" + _settings.siteRoot() + "/" + page.location.generic_string();
 			feedXml.append("<item>\n");
 			feedXml.append("<title>" + article.title() + "</title>\n");
 			feedXml.append("<pubDate>" + dateStr + "</pubDate>\n");

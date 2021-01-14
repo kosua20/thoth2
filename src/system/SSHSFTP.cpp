@@ -11,7 +11,6 @@
 #endif
 
 /* Platform independent file modes. */
-/* File mode */
 #define S_IRWXU_TH   0000700   /* [XSI] RWX mask for owner */
 #define S_IRUSR_TH   0000400   /* [XSI] R for owner */
 #define S_IWUSR_TH   0000200   /* [XSI] W for owner */
@@ -131,7 +130,8 @@ bool Server::copyItem(const fs::path & src, const fs::path & dst, bool force){
 		}
 
 		mode_t mode = S_IRUSR_TH | S_IWUSR_TH | S_IRGRP_TH | S_IROTH_TH;
-		sftp_file dstFile = sftp_open(_sftp, dst.c_str(), O_WRONLY | O_CREAT, mode);
+		const std::string dstStr = dst.generic_string();
+		sftp_file dstFile = sftp_open(_sftp, dstStr.c_str(), O_WRONLY | O_CREAT, mode);
 		if(!dstFile){
 			res = false;
 		} else {
@@ -173,7 +173,8 @@ bool Server::createDirectory(const fs::path & path, bool force){
 	}
 
 	mode_t mode = S_IRWXU_TH | S_IRGRP_TH | S_IXGRP_TH | S_IROTH_TH | S_IXOTH_TH;
-	const int res =  sftp_mkdir(_sftp, path.c_str(), mode);
+	const std::string pathStr = path.generic_string();
+	const int res =  sftp_mkdir(_sftp, pathStr.c_str(), mode);
 	return res == 0;
 }
 
@@ -186,14 +187,15 @@ bool Server::removeItem(const fs::path & path){
 	if(nameStr == "." || nameStr == ".."){
 		return true;
 	}
-	sftp_attributes item = sftp_stat(_sftp, path.c_str());
+	const std::string pathStr = path.generic_string();
+	sftp_attributes item = sftp_stat(_sftp, pathStr.c_str());
 	if(!item){
 		return false;
 	}
 	
 	if(item->type == SSH_FILEXFER_TYPE_DIRECTORY){
 		// Iterate over directory elements and recursively remove them.
-		const sftp_dir dir = sftp_opendir(_sftp, path.c_str());
+		const sftp_dir dir = sftp_opendir(_sftp, pathStr.c_str());
 		if(!dir){
 			sftp_attributes_free(item);
 			return false;
@@ -209,12 +211,12 @@ bool Server::removeItem(const fs::path & path){
 			sftp_attributes_free(item);
 			return false;
 		}
-		const bool resDir = (sftp_rmdir(_sftp, path.c_str()) == 0);
+		const bool resDir = (sftp_rmdir(_sftp, pathStr.c_str()) == 0);
 		sftp_attributes_free(item);
 		return res && resDir;
 	} else if(item->type == SSH_FILEXFER_TYPE_REGULAR || item->type == SSH_FILEXFER_TYPE_SYMLINK){
 		sftp_attributes_free(item);
-		return sftp_unlink(_sftp, path.c_str()) == 0;
+		return sftp_unlink(_sftp, pathStr.c_str()) == 0;
 	}
 	sftp_attributes_free(item);
 	return false;
@@ -225,7 +227,8 @@ bool Server::itemExists(const fs::path & path){
 		Log::Error() << Log::Server << "No SFTP session running." << std::endl;
 		return false;
 	}
-	sftp_attributes item = sftp_stat(_sftp, path.c_str());
+	const std::string pathStr = path.generic_string();
+	sftp_attributes item = sftp_stat(_sftp, pathStr.c_str());
 	if(item){
 		sftp_attributes_free(item);
 		return true;

@@ -248,7 +248,7 @@ int main(int argc, char** argv){
 	
 	if(config.action & TEST){
 		Log::Info() << Log::Config << "Configuration contains: " << std::endl << settings.str(false) << std::endl;
-		Log::Info() << Log::Server << "Attempting to connect to " << settings.ftpUsername() << "@" << settings.ftpDomain() << ":" << settings.ftpPath() << std::endl;
+		Log::Info() << Log::Server << "Attempting to connect to " << settings.ftpUsername() << "@" << settings.ftpDomain() << ":" << settings.ftpPath().generic_string() << std::endl;
 		// Test connection to SFTP.
 		Server server(settings.ftpDomain(), settings.ftpUsername(), settings.ftpPort());
 		const bool res = server.authenticate(settings.ftpPassword());
@@ -269,7 +269,7 @@ int main(int argc, char** argv){
 	}
 	
 	if(config.action & UPLOAD){
-		Log::Info() << Log::Upload << "Connecting to " << settings.ftpUsername() << "@" << settings.ftpDomain() << ":" << settings.ftpPath() << "." << std::endl;
+		Log::Info() << Log::Upload << "Connecting to " << settings.ftpUsername() << "@" << settings.ftpDomain() << ":" << settings.ftpPath().generic_string() << "." << std::endl;
 		Server server(settings.ftpDomain(), settings.ftpUsername(), settings.ftpPort());
 		const bool res = server.authenticate(settings.ftpPassword());
 		if(!res){
