@@ -60,7 +60,7 @@ public:
 		return _ftpDomain;
 	}
 	
-	const std::string & ftpPath() const {
+	const fs::path & ftpPath() const {
 		return _ftpPath;
 	};
 
@@ -96,17 +96,17 @@ private:
     /// The path to the output directory.
 	fs::path _outputPath;
     /// The default author name to use when generating articles.
-	std::string _defaultAuthor = "John Appleseed";
+	std::string _defaultAuthor = "";
     /// The format of the date used in the articles header.
 	std::string _dateStyle = "%m/%d/%Y";
     /// The title of the blog.
 	std::string _blogTitle = "A new blog";
     /// The default image width to use.
 	std::string _imageWidth = "640";
-	
+	/// The SFTP server domain
 	std::string _ftpDomain;
-	
-	std::string _ftpPath;
+	/// Path to the blog directory on the SFTP server
+	fs::path _ftpPath;
     /// The username to use to connect to the SFTP server.
 	std::string _ftpUsername = "";
     /// The password to use to connect to the SFTP server (if stored in the configuration).

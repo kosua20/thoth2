@@ -129,7 +129,7 @@ std::string Settings::str(bool includeHelp){
 	str << "blogTitle" << ":\t\t" << _blogTitle << "\n";
 	
 	if(includeHelp){
-		str << "\n# The default author name to use on each article page\n#\t(defaults to the current Mac user)\n";
+		str << "\n# The default author name to use on each article page\n#\t(defaults to an empty string)\n";
 	}
 	str << "defaultAuthor" << ":\t\t" << _defaultAuthor << "\n";
 	
