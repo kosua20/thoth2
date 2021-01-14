@@ -9,19 +9,19 @@
 #include <wincred.h>
 #endif
 
-bool Keychain::getPassword(const fs::path & server, const std::string & user, std::string & password){
+bool Keychain::getPassword(const std::string & server, const std::string & user, std::string & password){
 		
 #if defined(_MACOS)
 	UInt32 passLength;
 	char * passBuffer;
-	const std::string serverName = server.string();
+	const std::string serverName = server;
 	OSStatus stat = SecKeychainFindInternetPassword(nullptr, serverName.size(), serverName.c_str(), 0, nullptr, user.size(), user.c_str(), 0, nullptr, 0, kSecProtocolTypeSSH, kSecAuthenticationTypeDefault, &passLength, (void**)&passBuffer, nullptr);
 	if(stat == 0){
 		password = std::string(passBuffer, passLength);
 		return true;
 	}
 #elif defined(_WIN32)
-	const std::string serverName = "Thoth_" + user + "@" + server.string();
+	const std::string serverName = "Thoth_" + user + "@" + server;
 	const std::wstring targetName = System::widen(serverName);
 	PCREDENTIALW credential;
 	BOOL stat = CredReadW(targetName.c_str(), CRED_TYPE_GENERIC, 0, &credential);
@@ -37,11 +37,11 @@ bool Keychain::getPassword(const fs::path & server, const std::string & user, st
 }
 
 
-bool Keychain::setPassword(const fs::path & server, const std::string & user, const std::string & password){
+bool Keychain::setPassword(const std::string & server, const std::string & user, const std::string & password){
 
 #if defined(_MACOS)
 	SecKeychainItemRef item;
-	const std::string serverName = server.string();
+	const std::string serverName = server;
 	OSStatus stat = SecKeychainFindInternetPassword(nullptr, serverName.size(), serverName.c_str(), 0, nullptr, user.size(), user.c_str(), 0, nullptr, 0, kSecProtocolTypeSSH, kSecAuthenticationTypeDefault, 0, nullptr, &item);
 	if(stat == 0){
 		// If the item already exists, modify it.
@@ -52,7 +52,7 @@ bool Keychain::setPassword(const fs::path & server, const std::string & user, co
 	}
 	return stat == 0;
 #elif defined(_WIN32)
-	const std::string serverName = "Thoth_" + user + "@" + server.string();
+	const std::string serverName = "Thoth_" + user + "@" + server;
 	const std::wstring targetName = System::widen(serverName);
 	
 	CREDENTIALW credsToAdd = {};

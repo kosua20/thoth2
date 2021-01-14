@@ -7,9 +7,9 @@
 class Keychain {
 public:
 	
-	static bool getPassword(const fs::path & server, const std::string & user, std::string & password);
+	static bool getPassword(const std::string & server, const std::string & user, std::string & password);
 	
-	static bool setPassword(const fs::path & server, const std::string & user, const std::string & password);
+	static bool setPassword(const std::string & server, const std::string & user, const std::string & password);
 	
 private:
 	
