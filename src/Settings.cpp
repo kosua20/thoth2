@@ -153,7 +153,7 @@ std::string Settings::str(bool includeHelp){
 	}
 	str << "ftpAdress" << ":\t\t";
 	if(!_ftpDomain.empty() || !_ftpPath.empty()){
-		str << _ftpDomain << ":" << _ftpPath;
+		str << _ftpDomain << ":" << _ftpPath.generic_string();
 	}
 	str << "\n";
 	
