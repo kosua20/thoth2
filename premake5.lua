@@ -1,4 +1,5 @@
 
+
 workspace("Thoth")
 	-- Configuration.
 	configurations({ "Release", "Dev"})
@@ -48,7 +49,18 @@ workspace("Thoth")
 			sysincludedirs({ "libs/libssh/win/include" })
 			libdirs({"libs/libssh/win/lib/"})
 			links({"ssh", "mbedcrypto", "mbedtls", "mbedx509", "wsock32", "ws2_32", "pthreadVC3", "Advapi32"})
-			
+		filter("system:linux")
+			-- On Linux We have to query the dependencies for libsecret
+			if os.ishost("linux") then
+				listing, code = os.outputof("pkg-config --cflags libsecret-1")
+				libsecretFlags = string.explode(listing, " ")
+				listing, code = os.outputof("pkg-config --libs libsecret-1")
+				libsecretLibs = string.explode(string.gsub(listing, "-l", ""), " ")
+			end
+			buildoptions( libsecretFlags )
+			links({"ssh"})
+			links( libsecretLibs )
+
 		-- visual studio filters
 		filter("action:vs*")
 			defines({ "_CRT_SECURE_NO_WARNINGS" })  
