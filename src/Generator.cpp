@@ -233,7 +233,7 @@ void Generator::generateIndexPages(std::vector<Generator::Page> & pages){
 		currIndex.insert(currIndex.begin(), html.begin(), html.end());
 		
 		if(article.type() == Article::Public){
-			const std::string dateStr = article.date().value().str(format, "en_US");
+			const std::string dateStr = article.date().value().str(format, "en_US.UTF8"); // TODO: test local on macOS and Windows.
 			const std::string url = "http://" + _settings.siteRoot() + "/" + page.location.generic_string();
 			feedXml.append("<item>\n");
 			feedXml.append("<title>" + article.title() + "</title>\n");
