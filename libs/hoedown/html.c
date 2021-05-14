@@ -387,16 +387,17 @@ rndr_image(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer 
 	hoedown_html_renderer_state *state = data->opaque;
 	if (!link || !link->size) return 0;
 
+	// Always wrap in figure.
+	HOEDOWN_BUFPUTSL(ob, "<figure>\n");
+
 	if(images_link > 0){
 		HOEDOWN_BUFPUTSL(ob, "<a href=\"");
 		escape_href(ob, link->data, link->size);
 		HOEDOWN_BUFPUTSL(ob, "\">\n");
 	}
-	
 	HOEDOWN_BUFPUTSL(ob, "<img src=\"");
 	escape_href(ob, link->data, link->size);
 	HOEDOWN_BUFPUTSL(ob, "\" alt=\"");
-
 	
 	if (alt && alt->size){
 		escape_html(ob, alt->data, alt->size);
@@ -427,6 +428,19 @@ rndr_image(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer 
 	if(images_link > 0){
 		HOEDOWN_BUFPUTSL(ob, "\n</a>");
 	}
+
+	// Always wrap in figure.
+	if(state->title_as_size && alt && alt->size){
+		HOEDOWN_BUFPUTSL(ob, "\n<figcaption>");
+		escape_html(ob, alt->data, alt->size);
+		HOEDOWN_BUFPUTSL(ob, "</figcaption>");
+	} else if(state->title_as_size == 0 && title && title->size){
+		HOEDOWN_BUFPUTSL(ob, "\n<figcaption>");
+		escape_html(ob, title->data, title->size);
+		HOEDOWN_BUFPUTSL(ob, "</figcaption>");
+	}
+	HOEDOWN_BUFPUTSL(ob, "\n</figure>");
+
 	return 1;
 }
 
