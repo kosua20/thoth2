@@ -449,8 +449,8 @@ rndr_video(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer 
 {
 	hoedown_html_renderer_state *state = data->opaque;
 	if (!link || !link->size) return 0;
-	
-	HOEDOWN_BUFPUTSL(ob, "<video autoplay loop");
+	// playsinline needed for iOS.
+	HOEDOWN_BUFPUTSL(ob, "<video autoplay loop playsinline");
 	
 	if(state->title_as_size && title && title->size){
 		HOEDOWN_BUFPUTSL(ob, " width=\"");
