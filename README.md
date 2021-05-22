@@ -123,35 +123,30 @@ The password for the SFTP access is stored in the OS X user keychain. See the `s
 
 
 ### Extended markdown parsing
-You can create inline footnotes using the common format :
+You can create reference footnotes using the common format :
 
-    [^ here's the content of my footnote]
-    
+    This is a sentence[^refnote]
+    ...
+    [^refnote]: The footnote content
+
 Use the classes `footnote-link` and `footnote` in your template to style the footnotes links and content, respectively.
 
-You can also easily manage your images size in markdown, either by setting a default width, or defining it using the following syntax : 
+You can also easily manage your images size in markdown, either by setting a default width, or defining it using the following syntax, replacing the title: 
 
-    ![alt text](path/to/image.png "800,600,title")
+    ![alt text](path/to/image.png "800")
 
-or just 
+Title and caption will then use the alt text.
 
-    ![alt text](path/to/image.png "800,title")
-
-to automatically set the height according to the picture ratio.
 Pictures from your articles which are stored on your computer are also retrieved by Thoth and copied in article-specific folders, for an easier management.
 
 You can also integrate HTML5 videos in your articles using the following syntax:
 
-    ?[alt text](http://url/to/video.mp4 "800,600")
-    
-(There is not automatic copy of local videos yet.)
-    
-    
+    ?[alt text](path/to/video.mp4 "800")    
+
 ### Comments and ignored files
 In the config file, lines beginning with a `#` or a `_` will be ignored.  
 During articles processing and copy, files beginning with `_` or `#` won't be processed or copied.
 
 ## Future improvements
 
-- adding support for referenced footnotes
-- adding the generation of `sitemap.xml` and `feed.xml` files
+- adding proper generation of `sitemap.xml` file
