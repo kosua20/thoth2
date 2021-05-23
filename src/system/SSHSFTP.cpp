@@ -111,9 +111,16 @@ bool Server::copyItem(const fs::path & src, const fs::path & dst, bool force){
 	if(!System::itemExists(src)){
 		return false;
 	}
-	if(itemExists(dst) && force){
+
+	uint64_t dstSize = 0;
+	bool dstExists = itemExists(dst, dstSize);
+
+	// Remove present if forced.
+	if(dstExists && force){
 		removeItem(dst);
+		dstExists = false;
 	}
+
 	bool res = true;
 
 	if(System::isDirectory(src)){
@@ -124,13 +131,26 @@ bool Server::copyItem(const fs::path & src, const fs::path & dst, bool force){
 			res = res && res2;
 		}
 	} else if(System::isFile(src)){
-		// If the file still exist after potential force deletion, skip.
-		if(itemExists(dst)){
-			return true;
+
+		// If the dst file still exist after potential forced deletion,
+		// compare size with source.
+		if(dstExists){
+			// Retrieve size of file on disk.
+			std::error_code ec;
+			const uint64_t srcSize = uint64_t(fs::file_size(src, ec));
+			// If same size, probably same file, don't copy.
+			// TODO: more thorough comparison (time?).
+			if(srcSize == dstSize){
+				return true;
+			}
+			// Delete and keep going.
+			removeItem(dst);
+			dstExists = false;
 		}
 
-		mode_t mode = S_IRUSR_TH | S_IWUSR_TH | S_IRGRP_TH | S_IROTH_TH;
 		const std::string dstStr = dst.generic_string();
+		const mode_t mode = S_IRUSR_TH | S_IWUSR_TH | S_IRGRP_TH | S_IROTH_TH;
+
 		sftp_file dstFile = sftp_open(_sftp, dstStr.c_str(), O_WRONLY | O_CREAT, mode);
 		if(!dstFile){
 			res = false;
@@ -153,6 +173,9 @@ bool Server::copyItem(const fs::path & src, const fs::path & dst, bool force){
 			
 			srcFile.close();
 			sftp_close(dstFile);
+			if(res){
+				++_stats.uploadedFiles;
+			}
 		}
 	}
 	return res;
@@ -175,6 +198,9 @@ bool Server::createDirectory(const fs::path & path, bool force){
 	mode_t mode = S_IRWXU_TH | S_IRGRP_TH | S_IXGRP_TH | S_IROTH_TH | S_IXOTH_TH;
 	const std::string pathStr = path.generic_string();
 	const int res =  sftp_mkdir(_sftp, pathStr.c_str(), mode);
+	if(res == 0){
+		++_stats.createdDirs;
+	}
 	return res == 0;
 }
 
@@ -222,7 +248,7 @@ bool Server::removeItem(const fs::path & path){
 	return false;
 }
 
-bool Server::itemExists(const fs::path & path){
+bool Server::itemExists(const fs::path & path, uint64_t& size){
 	if(!_connected){
 		Log::Error() << Log::Server << "No SFTP session running." << std::endl;
 		return false;
@@ -230,10 +256,20 @@ bool Server::itemExists(const fs::path & path){
 	const std::string pathStr = path.generic_string();
 	sftp_attributes item = sftp_stat(_sftp, pathStr.c_str());
 	if(item){
+		size = item->size;
 		sftp_attributes_free(item);
 		return true;
 	}
 	return false;
+}
+
+bool Server::itemExists(const fs::path & path){
+	uint64_t size;
+	return itemExists(path, size);
+}
+
+void Server::resetStats(){
+	_stats = Stats();
 }
 
 int Server::verifyHost(){
