@@ -3,6 +3,8 @@
 #include "system/System.hpp"
 #include <iomanip>
 
+Date::Date(){}
+
 Date::Date(const std::string & date, const std::string & format) {
 	_date = {};
 	_initialStr = date;
@@ -10,9 +12,12 @@ Date::Date(const std::string & date, const std::string & format) {
 	str >> std::get_time(&_date, format.c_str());
 	if(str.fail()) {
 		Log::Error() << "Parsing failed for date \"" << date << "\" using format " << format << "." << std::endl;
-	} else {
-		_time = std::mktime(&_date);
+		return;
 	}
+	_date.tm_hour = 10;
+	_date.tm_min = 0;
+	_date.tm_sec = 0;
+	_time = std::mktime(&_date);
 }
 
 std::string Date::str(const std::string & format, const std::string & locale) const {
@@ -29,6 +34,14 @@ std::string Date::str(const std::string & format, const std::string & locale) co
 
 bool operator<(const Date & a, const Date & b){
 	return std::difftime(b._time, a._time) > 0;
+}
+
+Date Date::currentDate(){
+	Date date;
+	date._initialStr = "";
+	date._time = std::time(0);
+	localtime_r(&date._time, &date._date);
+	return date;
 }
 
 

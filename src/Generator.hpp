@@ -46,8 +46,9 @@ private:
 	
 	struct Page {
 		fs::path location;
-		std::string content;
+		std::string html;
 		std::string summary;
+		std::string innerContent;
 		std::vector<std::pair<fs::path, fs::path>> files;
 	};
 	

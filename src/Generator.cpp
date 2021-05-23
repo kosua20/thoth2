@@ -107,22 +107,7 @@ void Generator::renderPage(const Article & article, Page & page){
 	
 	const std::string content = renderContent(article);
 	page.summary = summarize(content, 400);
-	
-	std::string html(_template.article);
-	TextUtilities::replace(html, "{#TITLE}", article.title());
-	TextUtilities::replace(html, "{#DATE}", article.dateStr());
-	TextUtilities::replace(html, "{#AUTHOR}", article.author());
-	TextUtilities::replace(html, "{#BLOG_TITLE}", _settings.blogTitle());
-	TextUtilities::replace(html, "{#LINK}", page.location.generic_string());
-	TextUtilities::replace(html, "{#SUMMARY}", page.summary);
-	TextUtilities::replace(html, "{#AUTHOR}", article.author());
-	
-	if(!_template.syntax.empty() && content.find("<pre>") != std::string::npos){
-		TextUtilities::replace(html, "</head>", "\n" + _template.syntax + "\n</head>");
-	}
-	
-	TextUtilities::replace(html, "{#CONTENT}", content);
-	page.content = html;
+	page.innerContent = content;
 	
 	// Look for local links.
 	page.files.clear();
@@ -142,10 +127,26 @@ void Generator::renderPage(const Article & article, Page & page){
 			const fs::path locPath = article.url() / srcPath.filename();
 			const fs::path dstPath = fs::path(dir) / locPath;
 			page.files.push_back({srcPath, dstPath});
-			TextUtilities::replace(page.content, srcLink, locPath.generic_string());
+			TextUtilities::replace(page.innerContent, srcLink, locPath.generic_string());
 		}
 		srcPos = content.find("src=\"", endPos);
 	}
+
+	//Generate complete html.
+	std::string html(_template.article);
+	TextUtilities::replace(html, "{#TITLE}", article.title());
+	TextUtilities::replace(html, "{#DATE}", article.dateStr());
+	TextUtilities::replace(html, "{#AUTHOR}", article.author());
+	TextUtilities::replace(html, "{#BLOG_TITLE}", _settings.blogTitle());
+	TextUtilities::replace(html, "{#LINK}", page.location.generic_string());
+	TextUtilities::replace(html, "{#SUMMARY}", page.summary);
+	TextUtilities::replace(html, "{#AUTHOR}", article.author());
+	if(!_template.syntax.empty() && content.find("<pre>") != std::string::npos){
+		TextUtilities::replace(html, "</head>", "\n" + _template.syntax + "\n</head>");
+	}
+
+	TextUtilities::replace(html, "{#CONTENT}", page.innerContent);
+	page.html = html;
 	
 }
 
@@ -188,7 +189,7 @@ bool Generator::savePage(const Page & page, const fs::path & outputDir, bool for
 				System::copyItem(file.first, outputDir / file.second, force);
 			}
 		}
-		return System::writeStringToFile(page.content, outputFile);
+		return System::writeStringToFile(page.html, outputFile);
 	}
 	return false;
 }
@@ -216,12 +217,28 @@ void Generator::generateIndexPages(std::vector<Generator::Page> & pages){
 		{ Article::Draft, "index-drafts.html" },
 		{ Article::Public, "index.html" }
 	};
-	const std::string format = "%a, %d %b %Y 10:00:00 +0100";
-	
-	std::string feedXml("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<rss version=\"2.0\">\n<channel>\n");
-	feedXml.append("<title>" + _settings.blogTitle() + "</title>\n");
-	feedXml.append("<link>http://" + _settings.siteRoot() + "</link>\n");
-	feedXml.append("<description>" + _settings.blogTitle() + ", a blog.</description>\n");
+	const std::string format = "%a, %d %b %Y %H:%M:%S %z";
+
+	const std::string currentTime = Date::currentDate().str(format, EN_US_LOCALE);
+
+	std::string feedXml("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n");
+	feedXml.reserve(4096);
+	feedXml.append("<rss version=\"2.0\"");
+	feedXml.append("\n\txmlns:atom=\"http://www.w3.org/2005/Atom\"");
+	feedXml.append("\n\txmlns:content=\"http://purl.org/rss/1.0/modules/content/\"");
+	feedXml.append("\n\txmlns:dc=\"http://purl.org/dc/elements/1.1/\"");
+	feedXml.append(" >\n");
+	feedXml.append("<channel>\n");
+	feedXml.append("\t<title>" + _settings.blogTitle() + "</title>\n");
+	feedXml.append("\t<atom:link href=\"http://" + _settings.siteRoot() + "/feed.xml\" rel=\"self\" type=\"application/rss+xml\" />\n");
+	feedXml.append("\t<link>http://" + _settings.siteRoot() + "</link>\n");
+	feedXml.append("\t<description>" + _settings.blogTitle() + ", a blog");
+	if(!_settings.defaultAuthor().empty()){
+		feedXml.append(" by " + _settings.defaultAuthor());
+	}
+	feedXml.append(".</description>\n");
+	feedXml.append("\t<language>en-US</language>\n");
+	feedXml.append("\t<lastBuildDate>" + currentTime + "</lastBuildDate>\n");
 	
 	for(size_t aid = 0; aid < _articles.size(); ++aid){
 		const Article & article = _articles[aid];
@@ -241,12 +258,31 @@ void Generator::generateIndexPages(std::vector<Generator::Page> & pages){
 		if(article.type() == Article::Public){
 			const std::string dateStr = article.date().value().str(format, EN_US_LOCALE);
 			const std::string url = "http://" + _settings.siteRoot() + "/" + page.location.generic_string();
-			feedXml.append("<item>\n");
-			feedXml.append("<title>" + article.title() + "</title>\n");
-			feedXml.append("<pubDate>" + dateStr + "</pubDate>\n");
-			feedXml.append("<link>" + url + "</link>\n");
-			feedXml.append("<description>" + page.summary + "</description>\n");
-			feedXml.append("<guid>" + url + "</guid>\n</item>\n");
+			const std::string urlParent = "http://" + _settings.siteRoot() + "/" + page.location.parent_path().generic_string() + "/";
+			feedXml.append("\t<item>\n");
+			feedXml.append("\t\t<title>" + article.title() + "</title>\n");
+			feedXml.append("\t\t<pubDate>" + dateStr + "</pubDate>\n");
+			feedXml.append("\t\t<link>" + url + "</link>\n");
+			feedXml.append("\t\t<dc:creator>" + article.author() + "</dc:creator>\n");
+			feedXml.append("\t\t<description>" + page.summary + "</description>\n");
+			feedXml.append("\t\t<guid>" + url + "</guid>\n");
+
+			// Make all links absolute.
+			std::string content = page.innerContent;
+			std::string::size_type srcPos = content.find("src=\"");
+			std::string::size_type endPos = std::string::npos;
+
+			while(srcPos != std::string::npos){
+				endPos = content.find("\"", srcPos + 5);
+				const std::string link = content.substr(srcPos + 5, endPos - (srcPos + 5));
+				if(!TextUtilities::hasPrefix(link, "http") && !TextUtilities::hasPrefix(link, "www.")){
+					content.insert(srcPos + 5, urlParent);
+				}
+				srcPos = content.find("src=\"", endPos);
+			}
+
+			feedXml.append("\t\t<content:encoded><![CDATA[" + content + "]]></content:encoded>\n");
+			feedXml.append("\t</item>\n");
 		}
 	}
 	
@@ -255,12 +291,12 @@ void Generator::generateIndexPages(std::vector<Generator::Page> & pages){
 		index.second.insert(index.second.begin(), _template.header.begin(),  _template.header.end());
 		TextUtilities::replace(index.second, "{#BLOG_TITLE}", _settings.blogTitle());
 		pages.emplace_back();
-		pages.back().content = index.second;
+		pages.back().html = index.second;
 		pages.back().location = indexName.at(index.first);
 	}
 	
 	pages.emplace_back();
-	pages.back().content = feedXml;
+	pages.back().html = feedXml;
 	pages.back().location = fs::path("feed.xml");
 }
 

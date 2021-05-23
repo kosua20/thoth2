@@ -13,8 +13,12 @@ public:
 	std::string str(const std::string & format = "", const std::string & locale = "") const;
 	
 	friend bool operator<(const Date & a, const Date & b);
+
+	static Date currentDate();
 	
 private:
+
+	Date();
 	
 	std::tm _date;
 	std::time_t _time;
@@ -68,9 +72,6 @@ private:
     
     /// Denotes if the article is a draft or a published article
 	Type _type;
-    
-    /// A short summary composed of the beginning of the article text, stripped of its HTML components
-	//std::string _summary;
-	
+
 	fs::path _url;
 };
