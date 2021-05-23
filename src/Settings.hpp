@@ -76,6 +76,10 @@ public:
 		return _ftpPort;
 	}
 
+	unsigned int rssCount() const {
+		return _rssCount;
+	}
+
 	bool imagesLinks() const {
 		return _imagesLinks;
 	}
@@ -115,6 +119,8 @@ private:
 	std::string _siteRoot = "";
     /// The port to use to connect to the SFTP server.
 	int _ftpPort = 22;
+	/// Number of posts to display in the RSS feed.
+	unsigned int _rssCount = 10;
     /// Denotes if images in the generated HTML files should link to the raw image file.
 	bool _imagesLinks = false;
 	

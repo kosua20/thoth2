@@ -88,6 +88,8 @@ bool Settings::load(){
 				_ftpPassword = value;
 			} else if(key == "siteRoot"){
 				_siteRoot = value;
+			} else if(key == "rssCount"){
+				_rssCount = std::stoi(value);
 			}
 		}
 	}
@@ -177,6 +179,11 @@ std::string Settings::str(bool includeHelp){
 		str << "\n# The online URL of the blog, without http:// (for RSS generation)\n";
 	}
 	str << "siteRoot" << ":\t\t" << _siteRoot;
+
+	if(includeHelp){
+		str << "\n# The number of articles to display in the RSS feed\n#\t(defaults to 10)\n";
+	}
+	str << "rssCount" << ":\t\t" << _rssCount << "\n";
 	
 	return str.str();
 }
