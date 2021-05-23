@@ -141,39 +141,50 @@ void upload(const uint mode, const Settings & settings, Server & server){
 	// We could copy the root and nothing else, but in case of forced upload it could erase other user data.
 	
 	if(mode & INDEX){
+		server.resetStats();
+		
 		Log::Info() << Log::Upload << "Uploading index pages...";
 		// Index pages are always forced to update.
 		const bool st0 = server.copyItem(src / "index.html", dst / "index.html", true);
 		const bool st1 = server.copyItem(src / "index-drafts.html", dst / "index-drafts.html", true);
 		const bool st2 = server.copyItem(src / "feed.xml", dst / "feed.xml", true);
 		if(st0 && st1 && st2){
-			Log::Info() << " done." << std::endl;
+			const Server::Stats& stats = server.stats();
+			Log::Info() << " done (" << stats.uploadedFiles << " files)." << std::endl;
 		} else {
 			Log::Info() << " fail." << std::endl;
 		}
 	}
 	
 	if(mode & ARTICLES){
+		server.resetStats();
+
 		Log::Info() << Log::Upload << "Uploading article pages...";
 		const bool st0 = server.copyItem(src / "articles", dst / "articles", force);
 		if(st0){
-			Log::Info() << " done." << std::endl;
+			const Server::Stats& stats = server.stats();
+			Log::Info() << " done (" << stats.uploadedFiles << " files)." << std::endl;
 		} else {
 			Log::Info() << " fail." << std::endl;
 		}
 	}
 	
 	if(mode & DRAFTS){
+		server.resetStats();
+
 		Log::Info() << Log::Upload << "Uploading draft pages...";
 		const bool st0 = server.copyItem(src / "drafts", dst / "drafts", force);
 		if(st0){
-			Log::Info() << " done." << std::endl;
+			const Server::Stats& stats = server.stats();
+			Log::Info() << " done (" << stats.uploadedFiles << " files)." << std::endl;
 		} else {
 			Log::Info() << " fail." << std::endl;
 		}
 	}
 	
 	if(mode & RESOURCES){
+		server.resetStats();
+
 		const std::vector<std::string> nonResources = { "index.html", "index-drafts.html", "feed.xml", "articles", "drafts"};
 		
 		Log::Info() << Log::Upload << "Uploading resources...";
@@ -187,7 +198,8 @@ void upload(const uint mode, const Settings & settings, Server & server){
 			}
 		}
 		if(st){
-			Log::Info() << " done." << std::endl;
+			const Server::Stats& stats = server.stats();
+			Log::Info() << " done (" << stats.uploadedFiles << " files)." << std::endl;
 		} else {
 			Log::Info() << " fail." << std::endl;
 		}
