@@ -27,7 +27,15 @@ enum Action : uint {
 
 class Generator {
 public:
-	
+
+	struct Page {
+		fs::path location;
+		std::string html;
+		std::string summary;
+		std::string innerContent;
+		std::vector<std::pair<fs::path, fs::path>> files;
+	};
+
 	Generator(const Settings & settings);
 	
 	void process(const std::vector<Article> & articles, uint mode);
@@ -42,14 +50,6 @@ private:
 		std::string indexItem;
 		std::string article;
 		std::string syntax;
-	};
-	
-	struct Page {
-		fs::path location;
-		std::string html;
-		std::string summary;
-		std::string innerContent;
-		std::vector<std::pair<fs::path, fs::path>> files;
 	};
 	
 	void renderPage(const Article & article, Page & page);

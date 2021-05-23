@@ -179,19 +179,30 @@ std::string Generator::renderContent(const Article & article){
 
 bool Generator::savePage(const Page & page, const fs::path & outputDir, bool force) const {
 	const fs::path outputFile = outputDir / page.location;
-	if(force || !System::itemExists(outputFile)){
-		// Also copy related data.
-		if(!page.files.empty()){
-			// Assume they all go in the same directory.
-			const fs::path dirPath = (outputDir / page.files.front().second).parent_path();
-			System::createDirectory(dirPath, force);
-			for(const auto & file : page.files){
-				System::copyItem(file.first, outputDir / file.second, force);
-			}
-		}
-		return System::writeStringToFile(page.html, outputFile);
+	const bool fileExists = System::itemExists(outputFile);
+	bool fileHasChanged = true;
+	// If the file already exists, maybe its content hasn't changed.
+	if(fileExists){
+		const uint64_t newHash = TextUtilities::hash(page.html);
+		// TODO: cache old hashes in a list on disk if too slow.
+		const uint64_t oldHash = TextUtilities::hash(System::loadStringFromFile(outputFile));
+		fileHasChanged = newHash != oldHash;
 	}
-	return false;
+
+	bool wrote = false;
+	if(force || fileHasChanged){
+		wrote = System::writeStringToFile(page.html, outputFile);
+	}
+	// Also copy related data.
+	if(!page.files.empty()){
+		// Assume they all go in the same directory.
+	   const fs::path dirPath = (outputDir / page.files.front().second).parent_path();
+	   System::createDirectory(dirPath, force);
+	   for(const auto & file : page.files){
+		   System::copyItem(file.first, outputDir / file.second, force);
+	   }
+	}
+	return wrote;
 }
 
 size_t Generator::savePages(const Article::Type & type, const fs::path & output, bool force){
@@ -239,7 +250,9 @@ void Generator::generateIndexPages(std::vector<Generator::Page> & pages){
 	feedXml.append(".</description>\n");
 	feedXml.append("\t<language>en-US</language>\n");
 	feedXml.append("\t<lastBuildDate>" + currentTime + "</lastBuildDate>\n");
-	
+
+	const unsigned int minRssId = (std::max)(0, int(_articles.size()) - int(_settings.rssCount()));
+
 	for(size_t aid = 0; aid < _articles.size(); ++aid){
 		const Article & article = _articles[aid];
 		const Page & page = _pages[aid];
@@ -255,7 +268,7 @@ void Generator::generateIndexPages(std::vector<Generator::Page> & pages){
 		std::string & currIndex = indexHtml.at(article.type());
 		currIndex.insert(currIndex.begin(), html.begin(), html.end());
 		
-		if(article.type() == Article::Public){
+		if(article.type() == Article::Public && aid >= minRssId){
 			const std::string dateStr = article.date().value().str(format, EN_US_LOCALE);
 			const std::string url = "http://" + _settings.siteRoot() + "/" + page.location.generic_string();
 			const std::string urlParent = "http://" + _settings.siteRoot() + "/" + page.location.parent_path().generic_string() + "/";

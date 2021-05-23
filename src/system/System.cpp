@@ -78,7 +78,8 @@ bool System::copyItem(const fs::path & src, const fs::path & dst, bool force){
 	if(force){
 		options |= fs::copy_options::overwrite_existing;
 	} else {
-		options |= fs::copy_options::skip_existing;
+		// Only copy if content changed.
+		options |= fs::copy_options::update_existing;
 	}
 	std::error_code ec;
 	fs::copy(src, dst, options, ec);
@@ -142,7 +143,7 @@ bool System::writeStringToFile(const std::string & str, const fs::path & path){
 		Log::Error() << "Unable to write to file at path " << path << "." << std::endl;
 		return false;
 	}
-	file << str << std::endl;
+	file << str;
 	file.close();
 	return true;
 }
