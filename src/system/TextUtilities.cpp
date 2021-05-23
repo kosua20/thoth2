@@ -1,5 +1,7 @@
 #include "system/TextUtilities.hpp"
 
+#include <xxhash/xxhash.h>
+
 std::string TextUtilities::trim(const std::string & str, const std::string & del) {
 	const size_t firstNotDel = str.find_first_not_of(del);
 	if(firstNotDel == std::string::npos) {
@@ -108,4 +110,8 @@ std::string TextUtilities::lowercase(const std::string & src){
 		return std::tolower(c);
 	});
 	return dst;
+}
+
+uint64_t TextUtilities::hash(const std::string& str){
+	return uint64_t(XXH3_64bits(str.data(), str.size()));
 }

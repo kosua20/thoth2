@@ -63,5 +63,7 @@ public:
 	static std::vector<std::string> split(const std::string & str, const std::string & delimiter, bool skipEmpty);
 	
 	static std::string lowercase(const std::string & src);
+
+	static uint64_t hash(const std::string& str);
 	
 };
