@@ -301,7 +301,7 @@ int Server::verifyHost(){
 			return -1;
 		case SSH_KNOWN_HOSTS_NOT_FOUND:
 			Log::Warning() << Log::Server << "Could not find known host file. If you accept the host key here, the file will be automatically created." << std::endl;
-			__attribute__ ((fallthrough));
+			//__attribute__ ((fallthrough));
 			/* Falls through to SSH_SERVER_NOT_KNOWN behavior. */
 		case SSH_SERVER_NOT_KNOWN:
 			Log::Warning() << Log::Server << "The server is unknown. Do you trust the host key (yes/no)?" << std::endl;
