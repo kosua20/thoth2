@@ -2,6 +2,7 @@
 #include "system/TextUtilities.hpp"
 #include "system/System.hpp"
 #include <iomanip>
+#include <ctime>
 
 Date::Date(){}
 
@@ -40,7 +41,8 @@ Date Date::currentDate(){
 	Date date;
 	date._initialStr = "";
 	date._time = std::time(0);
-	localtime_r(&date._time, &date._date);
+	std::tm* dateTmp = std::localtime(&date._time);
+	memcpy( &date._date, dateTmp, sizeof( std::tm ) );
 	return date;
 }
 
