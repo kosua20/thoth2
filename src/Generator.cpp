@@ -141,6 +141,8 @@ void Generator::renderPage(const Article & article, Page & page){
 	TextUtilities::replace(html, "{#LINK}", page.location.generic_string());
 	TextUtilities::replace(html, "{#SUMMARY}", page.summary);
 	TextUtilities::replace(html, "{#AUTHOR}", article.author());
+	TextUtilities::replace(html, "{#ROOT_LINK}", _settings.siteRoot());
+
 	if(!_template.syntax.empty() && content.find("<pre>") != std::string::npos){
 		TextUtilities::replace(html, "</head>", "\n" + _template.syntax + "\n</head>");
 	}
@@ -303,6 +305,9 @@ void Generator::generateIndexPages(std::vector<Generator::Page> & pages){
 	for(auto & index : indexHtml){
 		index.second.insert(index.second.begin(), _template.header.begin(),  _template.header.end());
 		TextUtilities::replace(index.second, "{#BLOG_TITLE}", _settings.blogTitle());
+		TextUtilities::replace(index.second, "{#AUTHOR}", _settings.defaultAuthor());
+		TextUtilities::replace(index.second, "{#ROOT_LINK}", _settings.siteRoot());
+
 		pages.emplace_back();
 		pages.back().html = index.second;
 		pages.back().location = indexName.at(index.first);
