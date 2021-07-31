@@ -90,6 +90,8 @@ bool Settings::load(){
 				_siteRoot = value;
 			} else if(key == "rssCount"){
 				_rssCount = std::stoi(value);
+			} else if(key == "summaryLength"){
+				_summaryLength = std::stoi(value);
 			}
 		}
 	}
@@ -184,6 +186,11 @@ std::string Settings::str(bool includeHelp){
 		str << "\n# The number of articles to display in the RSS feed\n#\t(defaults to 10)\n";
 	}
 	str << "rssCount" << ":\t\t" << _rssCount << "\n";
+
+	if(includeHelp){
+		str << "\n# The character length of each article summary on the index page\n#\t(defaults to 400)\n";
+	}
+	str << "summaryLength" << ":\t\t" << _summaryLength << "\n";
 	
 	return str.str();
 }

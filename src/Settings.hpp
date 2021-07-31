@@ -80,6 +80,10 @@ public:
 		return _rssCount;
 	}
 
+	unsigned int summaryLength() const {
+		return _summaryLength;
+	}
+
 	bool imagesLinks() const {
 		return _imagesLinks;
 	}
@@ -121,6 +125,8 @@ private:
 	int _ftpPort = 22;
 	/// Number of posts to display in the RSS feed.
 	unsigned int _rssCount = 10;
+	/// Number of characters of the article summaries on the index page
+	unsigned int _summaryLength = 400;
     /// Denotes if images in the generated HTML files should link to the raw image file.
 	bool _imagesLinks = false;
 	

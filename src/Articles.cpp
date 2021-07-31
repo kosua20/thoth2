@@ -8,7 +8,7 @@ Date::Date(){}
 
 Date::Date(const std::string & date, const std::string & format) {
 	_date = {};
-	_initialStr = date;
+	_initialStr = TextUtilities::trim(date, " \t\n\r");
 	std::istringstream str(date);
 	str >> std::get_time(&_date, format.c_str());
 	if(str.fail()) {
@@ -57,18 +57,20 @@ Article::Article(const std::string & title, const std::optional<Date> & date, co
 }
 
 std::string Article::generateURL() const {
-	std::string str = _type == Public ? _date.value().str() : "DRAFT";
-	str.append("_");
-	str.append(_title);
-	str = TextUtilities::lowercase(str);
-	TextUtilities::replace(str, "/", "-");
-	TextUtilities::replace(str, " ", "_");
+	//std::string str = _type == Public ? _date.value().str() : "DRAFT";
+	//str.append("_");
+	std::string pageName = TextUtilities::lowercase(_title);
+	TextUtilities::replace(pageName, "/", "_");
+	TextUtilities::replace(pageName, " ", "_");
+	std::string str = _type == Public ? _date.value().str("%Y/%m") : "";
+	str.append("/");
+	str.append(pageName);
 	
-	const std::string ulrCompliant = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_";
+	const std::string urlCompliant = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_/";
 	
 	// Urgh.
 	for(size_t cid = 0; cid < str.size(); ++cid){
-		if(ulrCompliant.find(str[cid]) == std::string::npos){
+		if(urlCompliant.find(str[cid]) == std::string::npos){
 			str[cid] = '@';
 		}
 	}

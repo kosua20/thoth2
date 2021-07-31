@@ -101,12 +101,13 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 }
 
 void Generator::renderPage(const Article & article, Page & page){
-	const std::string dir = article.type() == Article::Public ? "articles" : "drafts";
-	page.location = fs::path(dir) / article.url();
+	const std::string baseDir = article.type() == Article::Public ? "articles" : "drafts";
+	const fs::path sharedUrl = fs::path(baseDir) / article.url();
+	page.location = sharedUrl;
 	page.location.replace_extension("html");
-	
+
 	const std::string content = renderContent(article);
-	page.summary = summarize(content, 400);
+	page.summary = summarize(content, _settings.summaryLength() );
 	page.innerContent = content;
 	
 	// Look for local links.
@@ -124,10 +125,10 @@ void Generator::renderPage(const Article & article, Page & page){
 		}
 		if(!TextUtilities::hasPrefix(link, "http") && !TextUtilities::hasPrefix(link, "www.")){
 			const fs::path srcPath = _settings.articlesPath() / link;
-			const fs::path locPath = article.url() / srcPath.filename();
-			const fs::path dstPath = fs::path(dir) / locPath;
+			const fs::path relPath = sharedUrl.stem() / srcPath.filename();
+			const fs::path dstPath = sharedUrl / srcPath.filename();
 			page.files.push_back({srcPath, dstPath});
-			TextUtilities::replace(page.innerContent, srcLink, locPath.generic_string());
+			TextUtilities::replace(page.innerContent, srcLink, relPath.generic_string());
 		}
 		srcPos = content.find("src=\"", endPos);
 	}
@@ -181,6 +182,8 @@ std::string Generator::renderContent(const Article & article){
 
 bool Generator::savePage(const Page & page, const fs::path & outputDir, bool force) const {
 	const fs::path outputFile = outputDir / page.location;
+	System::createDirectory(outputFile.parent_path(), false);
+	
 	const bool fileExists = System::itemExists(outputFile);
 	bool fileHasChanged = true;
 	// If the file already exists, maybe its content hasn't changed.
@@ -323,7 +326,33 @@ Generator::~Generator(){
 	hoedown_html_renderer_free(_renderer);
 }
 
+std::string::size_type findFirstSentenceEnd(const std::string& src, size_t start){
+	if(start + 1 >= src.size()){
+		return src.size();
+	}
+	const std::string sentenceEnds = ".!?";
+	std::string::size_type pos = src.find_first_of(sentenceEnds, start);
+	if(pos == std::string::npos){
+		return src.size();
+	}
+	// Early exit for last character.
+	if(pos + 1 == src.size()){
+		return pos;
+	}
+	// Check if this is really the end of a sentence.
+	if(src[pos+1] != ' ' && src[pos+1] != '\n' && src[pos+1] != '\r' && src[pos+1] != '\t'){
+		// Keep searching.
+		return findFirstSentenceEnd(src, pos+1);
+	}
+	return pos;
+}
+
+
 std::string Generator::summarize(const std::string & htmlText, const size_t length){
+	if(length == 0){
+		return "";
+	}
+	
 	// Just remove all "<...>" for now.
 	std::string summary = htmlText;
 	std::string::size_type openPos = summary.find("<");
@@ -335,11 +364,34 @@ std::string Generator::summarize(const std::string & htmlText, const size_t leng
 		summary = newString;
 		openPos = summary.find("<");
 	}
-	TextUtilities::replace(summary, "\n", "");
+
+	openPos = summary.find("[");
+	while(openPos != std::string::npos){
+		// Find the next closing bracket.
+		std::string::size_type closePos = summary.find("]", openPos+1);
+		// Remove everything between the two.
+		const std::string newString = summary.substr(0, openPos) + summary.substr(closePos+1);
+		summary = newString;
+		openPos = summary.find("[");
+	}
+
+	TextUtilities::replace(summary, " .", ".");
+	TextUtilities::replace(summary, "…", "...");
+	TextUtilities::replace(summary, "\n", " ");
 	TextUtilities::replace(summary, "\r", "");
 	TextUtilities::replace(summary, "\t", " ");
-	summary = summary.substr(0, std::min(length, summary.size()));
+
+	size_t targetLength = std::min(summary.size(), length);
+
+	// Try to cut between two words.
+	std::string::size_type pos = summary.find_last_of(" ", targetLength-1);
+	if(pos != std::string::npos){
+		targetLength = pos;
+	}
+
+	summary = summary.substr(0, targetLength);
+
 	summary = TextUtilities::trim(summary, " \t");
-	summary.append("...");
+	summary.append("…");
 	return summary;
 }
