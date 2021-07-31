@@ -76,6 +76,7 @@ Create your own HTML templates : Thoth expects at least two files in the templat
 - `{#LINK}` to insert a link to an article.
 - `{#CONTENT}` to insert the content of an article
 - `{#SUMMARY}` to insert a shortened version of an article (200-300 characters max.)
+- `{#ROOT_LINK}` to insert a link to the root of the blog
 - `{#ARTICLE_BEGIN}` and `{#ARTICLE_END}` in the index.html template to delimitate the HTML corresponding to an article item in the list.
 
 You can also provide a `syntax.html` file containing code for syntax highlighting. It will be inserted in the `<head>` section of each article that contains at least a block of code (`<pre><code>...</code></pre>`).
@@ -116,10 +117,16 @@ A simple, human-readable config file. No XML, JSON or YAML. Just a simple flat t
 - the ftp port to use (defaults to 22)  
 `ftpPort:       22`
 
-- the online URL of the blog, without `http://` (for RSS generation)
+- the online URL of the blog, without `http://` (for RSS generation)  
 `siteRoot:  blog.mysite.com`
 
-The password for the SFTP access is stored in the OS X user keychain. See the `set-password` command for more details.
+- the number of articles to list in the RSS feed (defaults to 10)  
+`rssCount:  10`
+
+- the length of each article summary on the index page (defaults to 400)  
+`summaryLength:  400`
+
+The password for the SFTP access is stored in the system user keychain. See the `set-password` command for more details.
 
 
 ### Extended markdown parsing
