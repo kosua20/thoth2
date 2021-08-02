@@ -126,6 +126,9 @@ A simple, human-readable config file. No XML, JSON or YAML. Just a simple flat t
 - the length of each article summary on the index page (defaults to 400)  
 `summaryLength:  400`
 
+- should per-year index pages be generated (defaults to `false`)  
+`calendarPages:  true`
+
 The password for the SFTP access is stored in the system user keychain. See the `set-password` command for more details.
 
 
@@ -154,6 +157,3 @@ You can also integrate HTML5 videos in your articles using the following syntax:
 In the config file, lines beginning with a `#` or a `_` will be ignored.  
 During articles processing and copy, files beginning with `_` or `#` won't be processed or copied.
 
-## Future improvements
-
-- adding proper generation of `sitemap.xml` file

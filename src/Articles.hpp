@@ -14,6 +14,10 @@ public:
 	
 	friend bool operator<(const Date & a, const Date & b);
 
+	size_t year() const;
+
+	size_t month() const;
+
 	static Date currentDate();
 	
 private:

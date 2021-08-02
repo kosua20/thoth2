@@ -92,6 +92,8 @@ bool Settings::load(){
 				_rssCount = std::stoi(value);
 			} else if(key == "summaryLength"){
 				_summaryLength = std::stoi(value);
+			} else if(key == "calendarPages"){
+				_calendarIndexPages = (value=="true") || (value=="True") || (value=="yes") || (value=="Yes") || (value=="1");
 			}
 		}
 	}
@@ -191,7 +193,12 @@ std::string Settings::str(bool includeHelp){
 		str << "\n# The character length of each article summary on the index page\n#\t(defaults to 400)\n";
 	}
 	str << "summaryLength" << ":\t\t" << _summaryLength << "\n";
-	
+
+	if(includeHelp){
+		str << "\n# Set to true if you want an index page to be generated for each year\n#\t(defaults to false)\n";
+	}
+	str << "calendarPages" << ":\t\t" << (_calendarIndexPages ? "true" : "false") << "\n";
+
 	return str.str();
 }
 

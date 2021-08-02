@@ -88,6 +88,10 @@ public:
 		return _imagesLinks;
 	}
 
+	bool calendarIndexPages() const {
+		return _calendarIndexPages;
+	}
+
 private:
 	
     /// The path to the main directory (computed).
@@ -129,5 +133,6 @@ private:
 	unsigned int _summaryLength = 400;
     /// Denotes if images in the generated HTML files should link to the raw image file.
 	bool _imagesLinks = false;
-	
+	/// Should index pages be generated for each year.
+	bool _calendarIndexPages = false;
 };

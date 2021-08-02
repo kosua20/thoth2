@@ -21,6 +21,14 @@ Date::Date(const std::string & date, const std::string & format) {
 	_time = std::mktime(&_date);
 }
 
+size_t Date::year() const {
+	return (size_t)(std::max)(0, _date.tm_year + 1900);
+}
+
+size_t Date::month() const {
+	return (size_t)(_date.tm_mon);
+}
+
 std::string Date::str(const std::string & format, const std::string & locale) const {
 	if(format.empty()){
 		return _initialStr;

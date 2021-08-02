@@ -29,11 +29,20 @@ class Generator {
 public:
 
 	struct Page {
+	public:
 		fs::path location;
 		std::string html;
-		std::string summary;
-		std::string innerContent;
 		std::vector<std::pair<fs::path, fs::path>> files;
+	};
+
+	struct PageArticle : public Page {
+	public:
+
+		const Article* article = nullptr;
+
+		std::string innerContent;
+		std::string summary;
+		std::string indexItem;
 	};
 
 	Generator(const Settings & settings);
@@ -52,22 +61,25 @@ private:
 		std::string syntax;
 	};
 	
-	void renderPage(const Article & article, Page & page);
+	void renderArticlePage(const Article & article, PageArticle & page);
 	
 	std::string renderContent(const Article & article);
 	
-	void generateIndexPages(std::vector<Page> & pages);
+	void generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, Page& page);
+
+	void generateRssFeed(const std::vector<const PageArticle*>& pages, Generator::Page& feed);
+
+	void generateSitemap(const std::vector<PageArticle>& articlePages, const std::vector<Page>& otherPages, const Page& indexPage, Generator::Page& sitemap);
 	
 	bool savePage(const Page & page, const fs::path & outputDir, bool force) const;
 	
-	size_t savePages(const Article::Type & mode, const fs::path & output, bool force);
+	size_t saveArticlePages(const std::vector<const PageArticle*>& pages, const fs::path & output, bool force);
 	
 	static std::string summarize(const std::string & htmlText, const size_t length);
 	
 	Template _template;
 	const Settings & _settings;
 	std::vector<Article> _articles;
-	std::vector<Page> _pages;
 	
 	hoedown_renderer * _renderer;
 	hoedown_buffer * _buffer;

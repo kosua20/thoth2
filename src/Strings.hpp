@@ -1,6 +1,6 @@
 #pragma once
 
-const std::string versionMessage = "{#Thoth} version 3.0";
+const std::string versionMessage = "{#Thoth} version 3.1";
 
 const std::string licenseMessage = "{#Thoth} Copyright (c) 2021, Simon Rodriguez\nAll rights reserved."
 "Thoth is relying on existing libraries that were incredibly helpful in achieving this tool. You can find their licenses below.\n"
