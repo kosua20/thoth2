@@ -132,7 +132,19 @@ std::optional<Article> Article::loadArticle(const fs::path & path, const Setting
 	if(headerTokens.size() > 2 && !headerTokens[2].empty()){
 		author = headerTokens[2];
 	}
-	return std::optional<Article>(Article(title, date, author, body));
+	auto article = std::optional<Article>(Article(title, date, author, body));
+
+	// Keywords
+	if(headerTokens.size() > 3 && !headerTokens[3].empty()){
+		auto keywords = TextUtilities::split(headerTokens[3], ",", true);
+		for(const std::string& rawKeyword : keywords){
+			std::string keyword = TextUtilities::trim(rawKeyword, " ,#");
+			keyword = TextUtilities::lowercase(keyword);
+			article.value().addKeyword(keyword);
+		}
+		std::sort(article.value()._keywords.begin(), article.value()._keywords.end());
+	}
+	return article;
 	
 }
 
@@ -161,4 +173,8 @@ std::vector<Article> Article::loadArticles(const fs::path & dir, const Settings 
 		return false;
 	});
 	return articles;
+}
+
+void Article::addKeyword(const std::string& keyword){
+	_keywords.push_back(keyword);
 }

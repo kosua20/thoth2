@@ -51,7 +51,11 @@ public:
 	const fs::path & url() const { return _url; }
 	
 	const Type & type() const { return _type; }
-	
+
+	const std::vector<std::string>& keywords() const { return _keywords; }
+
+	void addKeyword(const std::string& keyword);
+
 	static bool isValid(const fs::path & fileName);
 	
 	static std::optional<Article> loadArticle(const fs::path & path, const Settings & settings);
@@ -73,9 +77,13 @@ private:
     
     /// The author of the article
 	std::string _author;
+
+	/// Keywords for classifying this article.
+	std::vector<std::string> _keywords;
     
     /// Denotes if the article is a draft or a published article
 	Type _type;
 
+	/// URL generated from the title and date.
 	fs::path _url;
 };
