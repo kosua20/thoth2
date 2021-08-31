@@ -116,9 +116,9 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 				/*
 				const PageArticle& refPage = *(month.second[0]);
 				const std::string monthStr = refPage.article->date().value().str("%Y - %B");
-				const std::string title = _settings.blogTitle() + " - " + monthStr;
+				const std::string title = " Month: " + monthStr;
 				 otherPages.emplace_back();
-				generateIndexPage(month.second, title, otherPages.back());
+				generateIndexPage(month.second, title, "../../../", "../../../index.html", otherPages.back());
 				 otherPages.back().location = refPage.location.parent_path() / "index.html";
 				*/
 
@@ -126,9 +126,9 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 
 			const PageArticle& refPage = *(yearArticles[0]);
 			const std::string yearStr = refPage.article->date().value().str("%Y");
-			const std::string title = _settings.blogTitle() + " - " + yearStr;
+			const std::string title = "Year: " + yearStr;
 			otherPages.emplace_back();
-			generateIndexPage(yearArticles, title, otherPages.back());
+			generateIndexPage(yearArticles, title, "../..", "../../index.html", otherPages.back());
 			otherPages.back().location = refPage.location.parent_path().parent_path() / "index.html";
 		}
 
@@ -154,10 +154,11 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 		rootPages.resize(4);
 
 		rootPages[0].location = fs::path("index.html");
-		generateIndexPage(publishedPages, _settings.blogTitle(), rootPages[0]);
+		generateIndexPage(publishedPages, _settings.blogTitle(), ".", _settings.externalLink(), rootPages[0]);
 
 		rootPages[1].location = fs::path("index-drafts.html");
-		generateIndexPage(draftPages, _settings.blogTitle() + " - Drafts", rootPages[1]);
+		generateIndexPage(draftPages, _settings.blogTitle() + " - Drafts", ".", _settings.externalLink(), rootPages[1]);
+
 
 		rootPages[2].location = fs::path("feed.xml");
 		generateRssFeed(publishedPages, rootPages[2]);
@@ -321,7 +322,7 @@ size_t Generator::saveArticlePages(const std::vector<const PageArticle*>& pages,
 	return count;
 }
 
-void Generator::generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, Generator::Page& page){
+void Generator::generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, const fs::path& relativePath, const fs::path& parentPath, Generator::Page& page){
 
 	std::string html(_template.footer);
 	for(size_t aid = 0; aid < pages.size(); ++aid){
@@ -334,6 +335,11 @@ void Generator::generateIndexPage(const std::vector<const PageArticle*>& pages, 
 	TextUtilities::replace(html, "{#BLOG_TITLE}", title);
 	TextUtilities::replace(html, "{#AUTHOR}", _settings.defaultAuthor());
 	TextUtilities::replace(html, "{#ROOT_LINK}", _settings.siteRoot());
+	TextUtilities::replace(html, "{#RELATIVE_ROOT_LINK}", relativePath.generic_string());
+	TextUtilities::replace(html, "{#PARENT_LINK}", parentPath.generic_string());
+
+	page.html = html;
+}
 
 	page.html = html;
 }

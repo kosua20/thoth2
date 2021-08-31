@@ -64,7 +64,7 @@ private:
 	
 	std::string renderContent(const Article & article);
 	
-	void generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, Page& page);
+	void generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, const fs::path& relativePath, const fs::path& parentPath, Page& page);
 
 	void generateRssFeed(const std::vector<const PageArticle*>& pages, Generator::Page& feed);
 
