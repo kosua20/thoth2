@@ -104,7 +104,7 @@ std::vector<std::string> TextUtilities::split(const std::string & str, const std
 
 
 std::string TextUtilities::lowercase(const std::string & src){
-	std::string dst(src);;
+	std::string dst(src);
 	std::transform(src.begin(), src.end(), dst.begin(),
 				   [](unsigned char c){
 		return std::tolower(c);
@@ -114,4 +114,83 @@ std::string TextUtilities::lowercase(const std::string & src){
 
 uint64_t TextUtilities::hash(const std::string& str){
 	return uint64_t(XXH3_64bits(str.data(), str.size()));
+}
+
+std::string TextUtilities::summarize(const std::string & htmlText, const size_t length){
+	if(length == 0){
+		return "";
+	}
+
+	// Just remove all "<...>" for now.
+	std::string summary = htmlText;
+	std::string::size_type openPos = summary.find("<");
+	while(openPos != std::string::npos){
+		// Find the next closing bracket.
+		std::string::size_type closePos = summary.find(">", openPos+1);
+		// Remove everything between the two.
+		const std::string newString = summary.substr(0, openPos) + summary.substr(closePos+1);
+		summary = newString;
+		openPos = summary.find("<");
+	}
+
+	openPos = summary.find("[");
+	while(openPos != std::string::npos){
+		// Find the next closing bracket.
+		std::string::size_type closePos = summary.find("]", openPos+1);
+		// Remove everything between the two.
+		const std::string newString = summary.substr(0, openPos) + summary.substr(closePos+1);
+		summary = newString;
+		openPos = summary.find("[");
+	}
+
+	TextUtilities::replace(summary, " .", ".");
+	TextUtilities::replace(summary, "…", "...");
+	TextUtilities::replace(summary, "\n", " ");
+	TextUtilities::replace(summary, "\r", "");
+	TextUtilities::replace(summary, "\t", " ");
+
+	size_t targetLength = std::min(summary.size(), length);
+
+	// Try to cut between two words.
+	std::string::size_type pos = summary.find_last_of(" ", targetLength-1);
+	if(pos != std::string::npos){
+		targetLength = pos;
+	}
+
+	summary = summary.substr(0, targetLength);
+
+	summary = TextUtilities::trim(summary, " \t");
+	summary.append("…");
+	return summary;
+}
+
+std::string TextUtilities::sanitizeUrl(const std::string& name) {
+	std::string str = TextUtilities::lowercase(name);
+	TextUtilities::replace(str, "/", "_");
+	TextUtilities::replace(str, " ", "_");
+
+	const std::string urlCompliant = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_/";
+	for(size_t cid = 0; cid < str.size(); ++cid){
+		if(urlCompliant.find(str[cid]) == std::string::npos){
+			str[cid] = '@';
+		}
+	}
+	TextUtilities::replace(str, "@", "");
+	return str;
+}
+
+std::string TextUtilities::capitalize(const std::string& name) {
+	if(name.empty()){
+		return "";
+	}
+	std::string str = name;
+	const std::string letters = "abcdefghijklmnopqrstuvwxyz";
+	const std::string letterCaps = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	for(unsigned int lid = 0; lid < letters.size(); ++lid){
+		if(name[0] == letters[lid]){
+			str[0] = letterCaps[lid];
+			break;
+		}
+	}
+	return str;
 }

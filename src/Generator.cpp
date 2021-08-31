@@ -195,7 +195,7 @@ void Generator::renderArticlePage(const Article & article, Generator::PageArticl
 	page.location.replace_extension("html");
 
 	const std::string content = renderContent(article);
-	page.summary = summarize(content, _settings.summaryLength() );
+	page.summary = TextUtilities::summarize(content, _settings.summaryLength() );
 	page.innerContent = content;
 	
 	// Look for local links.
@@ -238,16 +238,20 @@ void Generator::renderArticlePage(const Article & article, Generator::PageArticl
 
 	TextUtilities::replace(html, "{#CONTENT}", page.innerContent);
 	page.html = html;
+	
+}
 
-	// Generate the index blurb.
-	std::string indexItem(_template.indexItem);
-	TextUtilities::replace(indexItem, "{#TITLE}", article.title());
-	TextUtilities::replace(indexItem, "{#DATE}", article.dateStr());
-	TextUtilities::replace(indexItem, "{#AUTHOR}", article.author());
-	TextUtilities::replace(indexItem, "{#LINK}", page.location.generic_string());
-	TextUtilities::replace(indexItem, "{#SUMMARY}", page.summary);
-	indexItem.append("\n");
-	page.indexItem = indexItem;
+std::string Generator::populateSnippet(const Generator::PageArticle & page, const fs::path& path, const std::string& src){
+	const Article& article = *page.article;
+
+	std::string html(src);
+	TextUtilities::replace(html, "{#TITLE}", article.title());
+	TextUtilities::replace(html, "{#DATE}", article.dateStr());
+	TextUtilities::replace(html, "{#AUTHOR}", article.author());
+	const fs::path finalPath = (path / page.location);
+	TextUtilities::replace(html, "{#LINK}", finalPath.generic_string());
+	TextUtilities::replace(html, "{#SUMMARY}", page.summary);
+	return html;
 }
 
 std::string Generator::renderContent(const Article & article){
@@ -322,7 +326,8 @@ void Generator::generateIndexPage(const std::vector<const PageArticle*>& pages, 
 	std::string html(_template.footer);
 	for(size_t aid = 0; aid < pages.size(); ++aid){
 		const PageArticle& page = *(pages[aid]);
-		html.insert(html.begin(), page.indexItem.begin(),page.indexItem.end());
+		const std::string content = populateSnippet(page, relativePath, _template.indexItem);
+		html.insert(html.begin(), content.begin(), content.end());
 	}
 
 	html.insert(html.begin(), _template.header.begin(),  _template.header.end());
@@ -473,50 +478,4 @@ std::string::size_type findFirstSentenceEnd(const std::string& src, size_t start
 }
 
 
-std::string Generator::summarize(const std::string & htmlText, const size_t length){
-	if(length == 0){
-		return "";
-	}
-	
-	// Just remove all "<...>" for now.
-	std::string summary = htmlText;
-	std::string::size_type openPos = summary.find("<");
-	while(openPos != std::string::npos){
-		// Find the next closing bracket.
-		std::string::size_type closePos = summary.find(">", openPos+1);
-		// Remove everything between the two.
-		const std::string newString = summary.substr(0, openPos) + summary.substr(closePos+1);
-		summary = newString;
-		openPos = summary.find("<");
-	}
 
-	openPos = summary.find("[");
-	while(openPos != std::string::npos){
-		// Find the next closing bracket.
-		std::string::size_type closePos = summary.find("]", openPos+1);
-		// Remove everything between the two.
-		const std::string newString = summary.substr(0, openPos) + summary.substr(closePos+1);
-		summary = newString;
-		openPos = summary.find("[");
-	}
-
-	TextUtilities::replace(summary, " .", ".");
-	TextUtilities::replace(summary, "…", "...");
-	TextUtilities::replace(summary, "\n", " ");
-	TextUtilities::replace(summary, "\r", "");
-	TextUtilities::replace(summary, "\t", " ");
-
-	size_t targetLength = std::min(summary.size(), length);
-
-	// Try to cut between two words.
-	std::string::size_type pos = summary.find_last_of(" ", targetLength-1);
-	if(pos != std::string::npos){
-		targetLength = pos;
-	}
-
-	summary = summary.substr(0, targetLength);
-
-	summary = TextUtilities::trim(summary, " \t");
-	summary.append("…");
-	return summary;
-}

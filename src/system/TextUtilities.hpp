@@ -65,5 +65,11 @@ public:
 	static std::string lowercase(const std::string & src);
 
 	static uint64_t hash(const std::string& str);
-	
+
+	static std::string summarize(const std::string & htmlText, const size_t length);
+
+	static std::string sanitizeUrl(const std::string& url);
+
+	static std::string capitalize(const std::string& str);
+
 };

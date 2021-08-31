@@ -42,7 +42,6 @@ public:
 
 		std::string innerContent;
 		std::string summary;
-		std::string indexItem;
 	};
 
 	Generator(const Settings & settings);
@@ -74,8 +73,8 @@ private:
 	bool savePage(const Page & page, const fs::path & outputDir, bool force) const;
 	
 	size_t saveArticlePages(const std::vector<const PageArticle*>& pages, const fs::path & output, bool force);
-	
-	static std::string summarize(const std::string & htmlText, const size_t length);
+
+	static std::string populateSnippet(const Generator::PageArticle & page, const fs::path& path, const std::string& src);
 	
 	Template _template;
 	const Settings & _settings;
