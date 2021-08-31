@@ -149,7 +149,10 @@ void upload(const uint mode, const Settings & settings, Server & server){
 		const bool st1 = server.copyItem(src / "index-drafts.html", dst / "index-drafts.html", true);
 		const bool st2 = server.copyItem(src / "feed.xml", dst / "feed.xml", true);
 		const bool st3 = server.copyItem(src / "sitemap.xml", dst / "sitemap.xml", true);
-		if(st0 && st1 && st2 && st3){
+		// Ensure the categories directory exists.
+		server.createDirectory(dst / "categories", false);
+		const bool st4 = server.copyItem(src / "categories/index.html", dst / "categories/index.html", true);
+		if(st0 && st1 && st2 && st3 && st4){
 			const Server::Stats& stats = server.stats();
 			Log::Info() << " done (" << stats.uploadedFiles << " files)." << std::endl;
 		} else {
@@ -160,9 +163,10 @@ void upload(const uint mode, const Settings & settings, Server & server){
 	if(mode & ARTICLES){
 		server.resetStats();
 
-		Log::Info() << Log::Upload << "Uploading article pages...";
+		Log::Info() << Log::Upload << "Uploading article and category pages...";
 		const bool st0 = server.copyItem(src / "articles", dst / "articles", force);
-		if(st0){
+		const bool st1 = server.copyItem(src / "categories", dst / "categories", force);
+		if(st0 && st1){
 			const Server::Stats& stats = server.stats();
 			Log::Info() << " done (" << stats.uploadedFiles << " files)." << std::endl;
 		} else {
