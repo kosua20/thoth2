@@ -2,7 +2,7 @@
 
 #include "Common.hpp"
 #include "Articles.hpp"
-
+#include <map>
 
 struct hoedown_buffer;
 struct hoedown_renderer;
@@ -28,6 +28,15 @@ enum Action : uint {
 class Generator {
 public:
 
+
+	Generator(const Settings & settings);
+	
+	void process(const std::vector<Article> & articles, uint mode);
+	
+	~Generator();
+	
+private:
+
 	struct Page {
 	public:
 		fs::path location;
@@ -44,13 +53,6 @@ public:
 		std::string summary;
 	};
 
-	Generator(const Settings & settings);
-	
-	void process(const std::vector<Article> & articles, uint mode);
-	
-	~Generator();
-	
-private:
 	
 	struct Template {
 		std::string footer;
@@ -68,7 +70,7 @@ private:
 
 	void generateRssFeed(const std::vector<const PageArticle*>& pages, Generator::Page& feed);
 
-	void generateSitemap(const std::vector<PageArticle>& articlePages, const std::vector<Page>& otherPages, const Page& indexPage, Generator::Page& sitemap);
+	void generateSitemap(const std::vector<const PageArticle*>& articlePages, const std::vector<Page>& otherPages, const std::vector<const Page*>& indexPages, Generator::Page& sitemap);
 	
 	bool savePage(const Page & page, const fs::path & outputDir, bool force) const;
 	

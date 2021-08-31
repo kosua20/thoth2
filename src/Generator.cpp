@@ -151,7 +151,7 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 		Log::Info() << Log::Generation << "Generating index pages:" << std::endl;
 
 		// Four main pages: 2 index pages, a RSS feed, a sitemap.
-		rootPages.resize(4);
+		rootPages.resize(5);
 
 		rootPages[0].location = fs::path("index.html");
 		generateIndexPage(publishedPages, _settings.blogTitle(), ".", _settings.externalLink(), rootPages[0]);
@@ -159,12 +159,13 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 		rootPages[1].location = fs::path("index-drafts.html");
 		generateIndexPage(draftPages, _settings.blogTitle() + " - Drafts", ".", _settings.externalLink(), rootPages[1]);
 
+		rootPages[2].location = fs::path("categories/index.html");
 
-		rootPages[2].location = fs::path("feed.xml");
-		generateRssFeed(publishedPages, rootPages[2]);
+		rootPages[3].location = fs::path("feed.xml");
+		generateRssFeed(publishedPages, rootPages[3]);
 
-		rootPages[3].location = fs::path("sitemap.xml");
-		generateSitemap(articlePages, otherPages, rootPages[0], rootPages[3]);
+		rootPages[4].location = fs::path("sitemap.xml");
+		generateSitemap(publishedPages, otherPages, {&rootPages[0], &rootPages[2]}, rootPages[4]);
 
 		// Save all general pages.
 		for(const auto & index : rootPages){
@@ -409,7 +410,7 @@ void Generator::generateRssFeed(const std::vector<const PageArticle*>& pages, Ge
 	feed.html = feedXml;
 }
 
-void Generator::generateSitemap(const std::vector<PageArticle>& articlePages, const std::vector<Page>& otherPages, const Page& indexPage, Generator::Page& sitemap){
+void Generator::generateSitemap(const std::vector<const PageArticle*>& articlePages, const std::vector<Page>& otherPages, const std::vector<const Page*>& indexPages, Generator::Page& sitemap){
 
 	const std::string format = "%Y-%m-%d";
 	const std::string currentDate = Date::currentDate().str(format, EN_US_LOCALE);
@@ -419,8 +420,8 @@ void Generator::generateSitemap(const std::vector<PageArticle>& articlePages, co
 	sitemapXml.append("<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n");
 
 	// Index page has the highest priority.
-	{
-		const std::string url = "http://" + _settings.siteRoot() + "/" + indexPage.location.generic_string();
+	for(const Page* indexPage : indexPages){
+		const std::string url = "http://" + _settings.siteRoot() + "/" + indexPage->location.generic_string();
 		sitemapXml.append("\t<url>\n");
 		sitemapXml.append("\t\t<loc>" + url + "</loc>\n");
 		sitemapXml.append("\t\t<changefreq>monthly</changefreq>\n");
@@ -430,9 +431,9 @@ void Generator::generateSitemap(const std::vector<PageArticle>& articlePages, co
 	}
 	
 	// Articles.
-	for(const PageArticle& page : articlePages){
-		const std::string url = "http://" + _settings.siteRoot() + "/" + page.location.generic_string();
-		const std::string date = page.article->date().value().str(format, EN_US_LOCALE);
+	for(const PageArticle* page : articlePages){
+		const std::string url = "http://" + _settings.siteRoot() + "/" + page->location.generic_string();
+		const std::string date = page->article->date().value().str(format, EN_US_LOCALE);
 
 		sitemapXml.append("\t<url>\n");
 		sitemapXml.append("\t\t<loc>" + url + "</loc>\n");
