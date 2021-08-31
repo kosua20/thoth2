@@ -72,6 +72,10 @@ public:
 		return _siteRoot;
 	}
 
+	const std::string & externalLink() const {
+		return _externalLink;
+	}
+
 	int ftpPort() const {
 		return _ftpPort;
 	}
@@ -90,6 +94,10 @@ public:
 
 	bool calendarIndexPages() const {
 		return _calendarIndexPages;
+	}
+
+	bool perCategoryLink() const {
+		return _perCategoryLink;
 	}
 
 private:
@@ -125,6 +133,8 @@ private:
 	std::string _ftpPassword = "";
     /// The URL of the site.
 	std::string _siteRoot = "";
+	/// Link to use as parent link on the main page
+	std::string _externalLink = "";
     /// The port to use to connect to the SFTP server.
 	int _ftpPort = 22;
 	/// Number of posts to display in the RSS feed.
@@ -135,4 +145,6 @@ private:
 	bool _imagesLinks = false;
 	/// Should index pages be generated for each year.
 	bool _calendarIndexPages = false;
+	/// Each category keyword links to the category page (instead of the overall categories list)
+	bool _perCategoryLink = true;
 };

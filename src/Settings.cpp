@@ -14,6 +14,10 @@ Settings::Settings(const fs::path & path){
 	_resourcesPath = _rootPath / "resources";
 }
 
+bool parseBool(const std::string& value){
+	return (value=="true") || (value=="True") || (value=="yes") || (value=="Yes") || (value=="1");
+}
+
 bool Settings::load(){
 	Log::Info() << Log::Load << "Loading settings from " << _selfPath << "." << std::endl;
 
@@ -58,7 +62,7 @@ bool Settings::load(){
 			} else if(key == "imageWidth"){
 				_imageWidth = value;
 			} else if(key == "imagesLinks"){
-				_imagesLinks = (value=="true") || (value=="True") || (value=="yes") || (value=="Yes") || (value=="1");
+				_imagesLinks = parseBool(value);
 			} else if(key == "ftpAdress"){
 				
 				TextUtilities::replace(value, "sftp://", "");
@@ -88,12 +92,16 @@ bool Settings::load(){
 				_ftpPassword = value;
 			} else if(key == "siteRoot"){
 				_siteRoot = value;
+			} else if(key == "externalLink"){
+				_externalLink = value;
 			} else if(key == "rssCount"){
 				_rssCount = std::stoi(value);
 			} else if(key == "summaryLength"){
 				_summaryLength = std::stoi(value);
 			} else if(key == "calendarPages"){
-				_calendarIndexPages = (value=="true") || (value=="True") || (value=="yes") || (value=="Yes") || (value=="1");
+				_calendarIndexPages = parseBool(value);
+			} else if(key == "perCategoryLink"){
+				_perCategoryLink = parseBool(value);
 			}
 		}
 	}
@@ -185,6 +193,11 @@ std::string Settings::str(bool includeHelp){
 	str << "siteRoot" << ":\t\t" << _siteRoot;
 
 	if(includeHelp){
+		str << "\n# The URL to use as parent link on the main page,\n";
+	}
+	str << "externalLink" << ":\t\t" << _externalLink;
+
+	if(includeHelp){
 		str << "\n# The number of articles to display in the RSS feed\n#\t(defaults to 10)\n";
 	}
 	str << "rssCount" << ":\t\t" << _rssCount << "\n";
@@ -198,6 +211,11 @@ std::string Settings::str(bool includeHelp){
 		str << "\n# Set to true if you want an index page to be generated for each year\n#\t(defaults to false)\n";
 	}
 	str << "calendarPages" << ":\t\t" << (_calendarIndexPages ? "true" : "false") << "\n";
+
+	if(includeHelp){
+		str << "\n# Set to true if you want each category keyword to link to its speific page, else links to the global category list\n#\t(defaults to true)\n";
+	}
+	str << "perCategoryLink" << ":\t\t" << (_perCategoryLink ? "true" : "false") << "\n";
 
 	return str.str();
 }
