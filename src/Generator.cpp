@@ -44,6 +44,19 @@ Generator::Generator(const Settings & settings) : _settings(settings) {
 	if(System::itemExists(settings.templatePath() / "syntax.html")){
 		_template.syntax  = System::loadStringFromFile(settings.templatePath() / "syntax.html");
 	}
+
+	//Category listing template.
+	const std::string categHtml   = System::loadStringFromFile(settings.templatePath() / "categories.html");
+	const std::string::size_type insertPosCateg = categHtml.find("{#CATEGORY_BEGIN}");
+	const std::string::size_type endPosCateg = categHtml.find("{#CATEGORY_END}");
+	const std::string::size_type insertPosNestedCateg = categHtml.find("{#ARTICLE_BEGIN}");
+	const std::string::size_type endPosNestedCateg = categHtml.find("{#ARTICLE_END}");
+	_template.headerCategory = categHtml.substr(0, insertPosCateg);
+	_template.footerCategory = categHtml.substr(endPosCateg + 15);
+	_template.itemHeaderCategory = categHtml.substr(insertPosCateg + 17, insertPosNestedCateg - (insertPosCateg + 17));
+	_template.itemFooterCategory = categHtml.substr(endPosNestedCateg + 14, endPosCateg - (endPosNestedCateg + 14));
+	_template.itemArticleCategory = categHtml.substr(insertPosNestedCateg + 16, endPosNestedCateg - (insertPosNestedCateg + 16));
+
 	// Init renderer based on options.
 	// Treat image title as width.
 	_renderer = hoedown_html_renderer_new(hoedown_html_flags(0), 16, 1);
@@ -59,10 +72,21 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 	std::vector<Page> rootPages;
 	std::vector<Page> otherPages;
 
+	// Generate all categories.
+	Categories categories;
+	for(const auto& article : articles){
+		for(const std::string& keyword : article.keywords()){
+			if(categories.count(keyword) == 0){
+				categories[keyword].title = TextUtilities::capitalize(keyword);
+				categories[keyword].location = fs::path("categories/" + TextUtilities::sanitizeUrl(keyword) + ".html");
+			}
+		}
+	}
+
 	// Convert the markdown representation to html for each article.
 	Log::Info() << Log::Generation << "Processing pages... ";
 	for(size_t aid = 0; aid < _articles.size(); ++aid){
-		renderArticlePage(_articles[aid], articlePages[aid]);
+		renderArticlePage(_articles[aid], articlePages[aid], categories);
 	}
 	Log::Info() << "done." << std::endl;
 
@@ -142,8 +166,39 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 			}
 			Log::Info() << count << " new created pages." << std::endl;
 		}
+	}
 
+	// Categories.
 
+	// Find all categories that are public, and accumulate pages.
+	std::map<std::string, std::vector<const PageArticle*>> categoryArticles;
+
+	for(const PageArticle* page: publishedPages){
+		const Article& article = *(page->article);
+		for(const std::string& keyword : article.keywords()){
+			categoryArticles[keyword].push_back(page);
+		}
+	}
+	{
+		for(const auto& categoryKV : categoryArticles){
+			const Category& category = categories.at(categoryKV.first);
+
+			const std::string title = "Category: " + category.title;
+			otherPages.emplace_back();
+			generateIndexPage(categoryKV.second, title, "..", "index.html", otherPages.back());
+			otherPages.back().location = category.location;
+		}
+
+		// Save all category pages.
+		if(mode & ARTICLES){
+			Log::Info() << Log::Generation << "Creating category pages... " << std::flush;
+			size_t count = 0;
+			for(const auto & page : otherPages){
+				const bool res = savePage(page, _settings.outputPath(), force);
+				count += size_t(res);
+			}
+			Log::Info() << count << " new created pages." << std::endl;
+		}
 	}
 
 	// Index pages.
@@ -160,6 +215,7 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 		generateIndexPage(draftPages, _settings.blogTitle() + " - Drafts", ".", _settings.externalLink(), rootPages[1]);
 
 		rootPages[2].location = fs::path("categories/index.html");
+		generateCategoriesPage(categoryArticles, categories, _settings.blogTitle() + " - Categories", "..", "../index.html", rootPages[2]);
 
 		rootPages[3].location = fs::path("feed.xml");
 		generateRssFeed(publishedPages, rootPages[3]);
@@ -188,7 +244,7 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 	
 }
 
-void Generator::renderArticlePage(const Article & article, Generator::PageArticle & page){
+void Generator::renderArticlePage(const Article & article, Generator::PageArticle & page, const Categories& categories){
 	page.article = &article;
 
 	const std::string baseDir = article.type() == Article::Public ? "articles" : "drafts";
@@ -222,12 +278,34 @@ void Generator::renderArticlePage(const Article & article, Generator::PageArticl
 		}
 		srcPos = content.find("src=\"", endPos);
 	}
+	//Prepare keywords string.
+	std::string keywordsStr;
+	const auto& keywords = article.keywords();
+	const size_t keyCount = keywords.size();
+	for(size_t kid = 0; kid < keyCount; ++kid){
+		const std::string& keyword = keywords[kid];
+		// Link wrt root.
+		keywordsStr.append(std::string("<a href=\"") + "../../../");
+		if(_settings.perCategoryLink()){
+			keywordsStr.append(categories.at(keyword).location.generic_string());
+		} else {
+			// Hardcoded to the categories global list.
+			keywordsStr.append("categories/index.html");
+		}
+		keywordsStr.append("\" class=\"category\">");
+		keywordsStr.append(keyword);
+		keywordsStr.append("</a>");
+		if(kid != (keyCount-1)){
+			keywordsStr.append(" ");
+		}
+	}
 
 	//Generate complete html.
 	std::string html(_template.article);
 	TextUtilities::replace(html, "{#TITLE}", article.title());
 	TextUtilities::replace(html, "{#DATE}", article.dateStr());
 	TextUtilities::replace(html, "{#AUTHOR}", article.author());
+	TextUtilities::replace(html, "{#KEYWORDS}", keywordsStr);
 	TextUtilities::replace(html, "{#BLOG_TITLE}", _settings.blogTitle());
 	TextUtilities::replace(html, "{#LINK}", page.location.generic_string());
 	TextUtilities::replace(html, "{#SUMMARY}", page.summary);
@@ -341,6 +419,44 @@ void Generator::generateIndexPage(const std::vector<const PageArticle*>& pages, 
 
 	page.html = html;
 }
+
+void Generator::generateCategoriesPage(const std::map<std::string, std::vector<const PageArticle*>>& categoryArticles, const Categories& categories, const std::string& title, const fs::path& relativePath, const fs::path& parentPath, Generator::Page& page){
+
+	// Sort categories.
+	std::vector<std::string> keywords;
+	keywords.reserve(categoryArticles.size());
+	for(const auto& categ : categoryArticles){
+		keywords.emplace_back(categ.first);
+	}
+	std::sort(keywords.begin(), keywords.end());
+
+	std::string html = _template.headerCategory;
+	for(const std::string& category : keywords){
+
+		const std::vector<const PageArticle*>& pages = categoryArticles.at(category);
+		const Category& infos = categories.at(category);
+
+		std::string htmlCat(_template.itemFooterCategory);
+		for(size_t aid = 0; aid < pages.size(); ++aid){
+			const PageArticle& page = *(pages[aid]);
+			const std::string content = Generator::populateSnippet(page, relativePath, _template.itemArticleCategory);
+			htmlCat.insert(htmlCat.begin(), content.begin(), content.end());
+		}
+
+		htmlCat.insert(htmlCat.begin(), _template.itemHeaderCategory.begin(),  _template.itemHeaderCategory.end());
+
+		TextUtilities::replace(htmlCat, "{#CATEGORY_TITLE}", infos.title);
+		const fs::path relativePagePath = relativePath / infos.location;
+		TextUtilities::replace(htmlCat, "{#CATEGORY_LINK}", relativePagePath.generic_string());
+
+		html.append(htmlCat);
+	}
+	html.append(_template.footerCategory);
+	TextUtilities::replace(html, "{#BLOG_TITLE}", title);
+	TextUtilities::replace(html, "{#AUTHOR}", _settings.defaultAuthor());
+	TextUtilities::replace(html, "{#ROOT_LINK}", _settings.siteRoot());
+	TextUtilities::replace(html, "{#RELATIVE_ROOT_LINK}", relativePath.generic_string());
+	TextUtilities::replace(html, "{#PARENT_LINK}", parentPath.generic_string());
 
 	page.html = html;
 }
