@@ -156,16 +156,6 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 			otherPages.back().location = refPage.location.parent_path().parent_path() / "index.html";
 		}
 
-		// Save all calendar pages.
-		if(mode & ARTICLES){
-			Log::Info() << Log::Generation << "Creating calendar pages... " << std::flush;
-			size_t count = 0;
-			for(const auto & page : otherPages){
-				const bool res = savePage(page, _settings.outputPath(), force);
-				count += size_t(res);
-			}
-			Log::Info() << count << " new created pages." << std::endl;
-		}
 	}
 
 	// Categories.
@@ -188,16 +178,15 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 		otherPages.back().location = category.location;
 	}
 
-		// Save all category pages.
-		if(mode & ARTICLES){
-			Log::Info() << Log::Generation << "Creating category pages... " << std::flush;
-			size_t count = 0;
-			for(const auto & page : otherPages){
-				const bool res = savePage(page, _settings.outputPath(), force);
-				count += size_t(res);
-			}
-			Log::Info() << count << " new created pages." << std::endl;
+	// Save all category and calendar pages.
+	if(mode & ARTICLES){
+		Log::Info() << Log::Generation << "Creating category/calendar pages... " << std::flush;
+		size_t count = 0;
+		for(const auto & page : otherPages){
+			const bool res = savePage(page, _settings.outputPath(), force);
+			count += size_t(res);
 		}
+		Log::Info() << count << " new created pages." << std::endl;
 	}
 
 	// Index pages.
