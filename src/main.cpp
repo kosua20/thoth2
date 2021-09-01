@@ -143,7 +143,7 @@ void upload(const uint mode, const Settings & settings, Server & server){
 	if(mode & INDEX){
 		server.resetStats();
 		
-		Log::Info() << Log::Upload << "Uploading index pages...";
+		Log::Info() << Log::Upload << "Uploading index pages..." << std::flush;
 		// Index pages are always forced to update.
 		const bool st0 = server.copyItem(src / "index.html", dst / "index.html", true);
 		const bool st1 = server.copyItem(src / "index-drafts.html", dst / "index-drafts.html", true);
@@ -163,7 +163,7 @@ void upload(const uint mode, const Settings & settings, Server & server){
 	if(mode & ARTICLES){
 		server.resetStats();
 
-		Log::Info() << Log::Upload << "Uploading article and category pages...";
+		Log::Info() << Log::Upload << "Uploading article and category pages..." << std::flush;
 		const bool st0 = server.copyItem(src / "articles", dst / "articles", force);
 		const bool st1 = server.copyItem(src / "categories", dst / "categories", force);
 		if(st0 && st1){
@@ -177,7 +177,7 @@ void upload(const uint mode, const Settings & settings, Server & server){
 	if(mode & DRAFTS){
 		server.resetStats();
 
-		Log::Info() << Log::Upload << "Uploading draft pages...";
+		Log::Info() << Log::Upload << "Uploading draft pages..." << std::flush;
 		const bool st0 = server.copyItem(src / "drafts", dst / "drafts", force);
 		if(st0){
 			const Server::Stats& stats = server.stats();
@@ -190,9 +190,9 @@ void upload(const uint mode, const Settings & settings, Server & server){
 	if(mode & RESOURCES){
 		server.resetStats();
 
-		const std::vector<std::string> nonResources = { "index.html", "index-drafts.html", "feed.xml", "sitemap.xml", "articles", "drafts"};
+		const std::vector<std::string> nonResources = { "index.html", "index-drafts.html", "feed.xml", "sitemap.xml", "articles", "drafts", "categories"};
 		
-		Log::Info() << Log::Upload << "Uploading resources...";
+		Log::Info() << Log::Upload << "Uploading resources..." << std::flush;
 		const auto files = System::listItems(src, false, true);
 		bool st = true;
 		for(const auto & file : files){

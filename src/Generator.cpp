@@ -28,6 +28,7 @@ Generator::Generator(const Settings & settings) : _settings(settings) {
 	}
 	System::removeItem(settings.outputPath() / "article.html");
 	System::removeItem(settings.outputPath() / "syntax.html");
+	System::removeItem(settings.outputPath() / "categories.html");
 	
 	// Load template data.
 	if(!System::itemExists(settings.templatePath() / "article.html") || !System::itemExists(settings.templatePath() / "index.html")){
