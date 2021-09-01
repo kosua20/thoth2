@@ -169,7 +169,7 @@ std::string TextUtilities::sanitizeUrl(const std::string& name) {
 	TextUtilities::replace(str, "/", "_");
 	TextUtilities::replace(str, " ", "_");
 
-	const std::string urlCompliant = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_/";
+	const std::string urlCompliant = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"; // remove "/"
 	for(size_t cid = 0; cid < str.size(); ++cid){
 		if(urlCompliant.find(str[cid]) == std::string::npos){
 			str[cid] = '@';
@@ -179,18 +179,23 @@ std::string TextUtilities::sanitizeUrl(const std::string& name) {
 	return str;
 }
 
-std::string TextUtilities::capitalize(const std::string& name) {
-	if(name.empty()){
+std::string TextUtilities::uppercaseFirst(const std::string& str) {
+	if(str.empty()){
 		return "";
 	}
-	std::string str = name;
+	std::string str1 = str;
 	const std::string letters = "abcdefghijklmnopqrstuvwxyz";
 	const std::string letterCaps = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	for(unsigned int lid = 0; lid < letters.size(); ++lid){
-		if(name[0] == letters[lid]){
-			str[0] = letterCaps[lid];
+		if(str1[0] == letters[lid]){
+			str1[0] = letterCaps[lid];
 			break;
 		}
 	}
-	return str;
+	return str1;
+}
+
+bool TextUtilities::hasUppercase(const std::string& str) {
+	const std::string letterCaps = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	return str.find_first_of(letterCaps) != std::string::npos;
 }

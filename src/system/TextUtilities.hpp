@@ -70,6 +70,7 @@ public:
 
 	static std::string sanitizeUrl(const std::string& url);
 
-	static std::string capitalize(const std::string& str);
+	static std::string uppercaseFirst(const std::string& str);
 
+	static bool hasUppercase(const std::string& str);
 };

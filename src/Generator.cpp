@@ -75,10 +75,10 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 	// Generate all categories.
 	Categories categories;
 	for(const auto& article : articles){
-		for(const std::string& keyword : article.keywords()){
-			if(categories.count(keyword) == 0){
-				categories[keyword].title = TextUtilities::capitalize(keyword);
-				categories[keyword].location = fs::path("categories/" + TextUtilities::sanitizeUrl(keyword) + ".html");
+		for(const Article::Keyword& keyword : article.keywords()){
+			if(categories.count(keyword.id) == 0){
+				categories[keyword.id].name = keyword.name;
+				categories[keyword.id].location = fs::path("categories/" + keyword.id + ".html");
 			}
 		}
 	}
@@ -175,19 +175,18 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 
 	for(const PageArticle* page: publishedPages){
 		const Article& article = *(page->article);
-		for(const std::string& keyword : article.keywords()){
-			categoryArticles[keyword].push_back(page);
+		for(const Article::Keyword& keyword : article.keywords()){
+			categoryArticles[keyword.id].push_back(page);
 		}
 	}
-	{
-		for(const auto& categoryKV : categoryArticles){
-			const Category& category = categories.at(categoryKV.first);
+	for(const auto& categoryKV : categoryArticles){
+		const Category& category = categories.at(categoryKV.first);
 
-			const std::string title = "Category: " + category.title;
-			otherPages.emplace_back();
-			generateIndexPage(categoryKV.second, title, "..", "index.html", otherPages.back());
-			otherPages.back().location = category.location;
-		}
+		const std::string title = "Category: " + category.name;
+		otherPages.emplace_back();
+		generateIndexPage(categoryKV.second, title, "..", "index.html", otherPages.back());
+		otherPages.back().location = category.location;
+	}
 
 		// Save all category pages.
 		if(mode & ARTICLES){
@@ -283,17 +282,18 @@ void Generator::renderArticlePage(const Article & article, Generator::PageArticl
 	const auto& keywords = article.keywords();
 	const size_t keyCount = keywords.size();
 	for(size_t kid = 0; kid < keyCount; ++kid){
-		const std::string& keyword = keywords[kid];
+		const Article::Keyword& keyword = keywords[kid];
 		// Link wrt root.
 		keywordsStr.append(std::string("<a href=\"") + "../../../");
 		if(_settings.perCategoryLink()){
-			keywordsStr.append(categories.at(keyword).location.generic_string());
+			keywordsStr.append(categories.at(keyword.id).location.generic_string());
 		} else {
 			// Hardcoded to the categories global list.
-			keywordsStr.append("categories/index.html");
+			keywordsStr.append("categories/index.html#" + keyword.id);
 		}
-		keywordsStr.append("\" class=\"category\">");
-		keywordsStr.append(keyword);
+		keywordsStr.append("\" class=\"keyword\">");
+		// Apply lowercase for uniformity.
+		keywordsStr.append(TextUtilities::lowercase(keyword.name));
 		keywordsStr.append("</a>");
 		if(kid != (keyCount-1)){
 			keywordsStr.append(" ");
@@ -423,18 +423,18 @@ void Generator::generateIndexPage(const std::vector<const PageArticle*>& pages, 
 void Generator::generateCategoriesPage(const std::map<std::string, std::vector<const PageArticle*>>& categoryArticles, const Categories& categories, const std::string& title, const fs::path& relativePath, const fs::path& parentPath, Generator::Page& page){
 
 	// Sort categories.
-	std::vector<std::string> keywords;
-	keywords.reserve(categoryArticles.size());
+	std::vector<std::string> keywordIDs;
+	keywordIDs.reserve(categoryArticles.size());
 	for(const auto& categ : categoryArticles){
-		keywords.emplace_back(categ.first);
+		keywordIDs.emplace_back(categ.first);
 	}
-	std::sort(keywords.begin(), keywords.end());
+	std::sort(keywordIDs.begin(), keywordIDs.end());
 
 	std::string html = _template.headerCategory;
-	for(const std::string& category : keywords){
+	for(const std::string& categoryID : keywordIDs){
 
-		const std::vector<const PageArticle*>& pages = categoryArticles.at(category);
-		const Category& infos = categories.at(category);
+		const std::vector<const PageArticle*>& pages = categoryArticles.at(categoryID);
+		const Category& infos = categories.at(categoryID);
 
 		std::string htmlCat(_template.itemFooterCategory);
 		for(size_t aid = 0; aid < pages.size(); ++aid){
@@ -445,7 +445,8 @@ void Generator::generateCategoriesPage(const std::map<std::string, std::vector<c
 
 		htmlCat.insert(htmlCat.begin(), _template.itemHeaderCategory.begin(),  _template.itemHeaderCategory.end());
 
-		TextUtilities::replace(htmlCat, "{#CATEGORY_TITLE}", infos.title);
+		TextUtilities::replace(htmlCat, "{#CATEGORY_TITLE}", infos.name);
+		TextUtilities::replace(htmlCat, "{#CATEGORY_ID}", categoryID);
 		const fs::path relativePagePath = relativePath / infos.location;
 		TextUtilities::replace(htmlCat, "{#CATEGORY_LINK}", relativePagePath.generic_string());
 

@@ -138,11 +138,12 @@ std::optional<Article> Article::loadArticle(const fs::path & path, const Setting
 	if(headerTokens.size() > 3 && !headerTokens[3].empty()){
 		auto keywords = TextUtilities::split(headerTokens[3], ",", true);
 		for(const std::string& rawKeyword : keywords){
-			std::string keyword = TextUtilities::trim(rawKeyword, " ,#");
-			keyword = TextUtilities::lowercase(keyword);
+			const std::string keyword = TextUtilities::trim(rawKeyword, " ,#\t;");
 			article.value().addKeyword(keyword);
 		}
-		std::sort(article.value()._keywords.begin(), article.value()._keywords.end());
+		std::sort(article.value()._keywords.begin(), article.value()._keywords.end(), [](const Keyword& a, const Keyword& b){
+			return a.id < b.id;
+		});
 	}
 	return article;
 	
@@ -176,5 +177,13 @@ std::vector<Article> Article::loadArticles(const fs::path & dir, const Settings 
 }
 
 void Article::addKeyword(const std::string& keyword){
-	_keywords.push_back(keyword);
+
+	_keywords.emplace_back();
+	// ID: lowercase, URL compatible.
+	const std::string keywordID = TextUtilities::sanitizeUrl(keyword);
+	_keywords.back().id = keywordID;
+	// Name: preserve as-is except if it's only lowercase letters, in which case uppercase the first letter.
+	_keywords.back().name = TextUtilities::hasUppercase(keyword) ? keyword : TextUtilities::uppercaseFirst(keyword);
+
+
 }

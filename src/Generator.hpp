@@ -54,7 +54,7 @@ private:
 	};
 
 	struct Category {
-		std::string title;
+		std::string name;
 		fs::path location;
 	};
 	

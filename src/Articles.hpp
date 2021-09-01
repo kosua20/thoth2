@@ -35,6 +35,11 @@ public:
 	enum Type {
 		Draft, Public
 	};
+
+	struct Keyword {
+		std::string id;
+		std::string name;
+	};
 	
 	Article(const std::string & title, const std::optional<Date> & date, const std::string & author, const std::string & content);
 	
@@ -52,7 +57,7 @@ public:
 	
 	const Type & type() const { return _type; }
 
-	const std::vector<std::string>& keywords() const { return _keywords; }
+	const std::vector<Keyword>& keywords() const { return _keywords; }
 
 	void addKeyword(const std::string& keyword);
 
@@ -79,7 +84,7 @@ private:
 	std::string _author;
 
 	/// Keywords for classifying this article.
-	std::vector<std::string> _keywords;
+	std::vector<Keyword> _keywords;
     
     /// Denotes if the article is a draft or a published article
 	Type _type;
