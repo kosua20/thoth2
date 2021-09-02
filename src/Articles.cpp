@@ -70,8 +70,7 @@ std::string Article::generateURL() const {
 	std::string pageName = TextUtilities::lowercase(_title);
 	TextUtilities::replace(pageName, "/", "_");
 	TextUtilities::replace(pageName, " ", "_");
-	std::string str = _type == Public ? _date.value().str("%Y/%m") : "";
-	str.append("/");
+	std::string str = _type == Public ? _date.value().str("%Y/%m/") : "YYYY/mm/";
 	str.append(pageName);
 	
 	const std::string urlCompliant = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_/";

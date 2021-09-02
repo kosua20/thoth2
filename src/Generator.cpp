@@ -236,8 +236,10 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 void Generator::renderArticlePage(const Article & article, Generator::PageArticle & page, const Categories& categories){
 	page.article = &article;
 
-	const std::string baseDir = article.type() == Article::Public ? "articles" : "drafts";
-	const fs::path sharedUrl = fs::path(baseDir) / article.url();
+	const bool isPublic = article.type() == Article::Public;
+	const std::string baseDir = isPublic ? "articles" : "drafts";
+	const fs::path baseDirPath(baseDir);
+	const fs::path sharedUrl = baseDirPath / article.url();
 	page.location = sharedUrl;
 	page.location.replace_extension("html");
 
@@ -267,6 +269,8 @@ void Generator::renderArticlePage(const Article & article, Generator::PageArticl
 		}
 		srcPos = content.find("src=\"", endPos);
 	}
+	const std::string relativeToRoot = "../../../";
+
 	//Prepare keywords string.
 	std::string keywordsStr;
 	const auto& keywords = article.keywords();
@@ -274,7 +278,7 @@ void Generator::renderArticlePage(const Article & article, Generator::PageArticl
 	for(size_t kid = 0; kid < keyCount; ++kid){
 		const Article::Keyword& keyword = keywords[kid];
 		// Link wrt root.
-		keywordsStr.append(std::string("<a href=\"") + "../../../");
+		keywordsStr.append(std::string("<a href=\"") + relativeToRoot);
 		if(_settings.perCategoryLink()){
 			keywordsStr.append(categories.at(keyword.id).location.generic_string());
 		} else {
