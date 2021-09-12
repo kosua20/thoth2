@@ -395,7 +395,7 @@ size_t Generator::saveArticlePages(const std::vector<const PageArticle*>& pages,
 	return count;
 }
 
-void Generator::generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, const fs::path& relativePath, const fs::path& parentPath, Generator::Page& page){
+void Generator::generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, const fs::path& relativePath, const std::string& parentPath, Generator::Page& page){
 
 	std::string html(_template.footer);
 	for(size_t aid = 0; aid < pages.size(); ++aid){
@@ -409,7 +409,7 @@ void Generator::generateIndexPage(const std::vector<const PageArticle*>& pages, 
 	TextUtilities::replace(html, "{#AUTHOR}", _settings.defaultAuthor());
 	TextUtilities::replace(html, "{#ROOT_LINK}", _settings.siteRoot());
 	TextUtilities::replace(html, "{#RELATIVE_ROOT_LINK}", relativePath.generic_string());
-	TextUtilities::replace(html, "{#PARENT_LINK}", parentPath.generic_string());
+	TextUtilities::replace(html, "{#PARENT_LINK}", parentPath);
 
 	page.html = html;
 }

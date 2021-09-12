@@ -78,7 +78,7 @@ private:
 	
 	std::string renderContent(const Article & article);
 	
-	void generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, const fs::path& relativePath, const fs::path& parentPath, Page& page);
+	void generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, const fs::path& relativePath, const std::string& parentPath, Page& page);
 
 	void generateCategoriesPage(const std::map<std::string, std::vector<const PageArticle*>>& categoryArticles, const Categories& categories, const std::string& title,  const fs::path& relativePath, const fs::path& parentPath, Generator::Page& page);
 
