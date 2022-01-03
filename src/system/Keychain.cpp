@@ -93,7 +93,7 @@ bool Keychain::setPassword(const std::string & server, const std::string & user,
 	credsToAdd.Type = CRED_TYPE_GENERIC;
 	credsToAdd.TargetName = (LPWSTR)targetName.c_str();
 	credsToAdd.CredentialBlob = (LPBYTE)password.c_str();
-	credsToAdd.CredentialBlobSize = password.size();
+	credsToAdd.CredentialBlobSize = (DWORD)password.size();
 	credsToAdd.Persist = CRED_PERSIST_LOCAL_MACHINE;
 	// This will overwrite the credential if it already exists.
 	BOOL stat = CredWrite(&credsToAdd, 0);
