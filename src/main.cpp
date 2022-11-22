@@ -93,7 +93,7 @@ public:
 		
 		registerSection("Process");
 		registerArgument("generate", "", "Generates the site (specified by --path). All existing files are kept. Drafts are updated. New articles are added. Index is rebuilt.");
-		registerArgument("upload", "", "Upload to the SFTP server the content of the blog (specified by --path) that is not already present.");
+		registerArgument("upload", "", "Upload to the SFTP server the content of the blog (specified by --path) that is not already present (except drafts).");
 		registerArgument("scribe", "", "Combines \"generate\" and \"upload\" with the corresponding config and options.");
 		
 		registerSection("Modifiers");
@@ -146,9 +146,10 @@ void upload(const uint mode, const Settings & settings, Server & server){
 		Log::Info() << Log::Upload << "Uploading index pages..." << std::flush;
 		// Index pages are always forced to update.
 		const bool st0 = server.copyItem(src / "index.html", dst / "index.html", true);
-		const bool st1 = server.copyItem(src / "index-drafts.html", dst / "index-drafts.html", true);
 		const bool st2 = server.copyItem(src / "feed.xml", dst / "feed.xml", true);
 		const bool st3 = server.copyItem(src / "sitemap.xml", dst / "sitemap.xml", true);
+		// Never upload drafts
+		const bool st1 = true;//server.copyItem(src / "index-drafts.html", dst / "index-drafts.html", true);
 		// Ensure the categories directory exists.
 		server.createDirectory(dst / "categories", false);
 		const bool st4 = server.copyItem(src / "categories/index.html", dst / "categories/index.html", true);
@@ -174,7 +175,9 @@ void upload(const uint mode, const Settings & settings, Server & server){
 		}
 	}
 	
-	if(mode & DRAFTS){
+	/*
+	 // Never upload drafts
+	 if(mode & DRAFTS){
 		server.resetStats();
 
 		Log::Info() << Log::Upload << "Uploading draft pages..." << std::flush;
@@ -186,6 +189,7 @@ void upload(const uint mode, const Settings & settings, Server & server){
 			Log::Info() << " fail." << std::endl;
 		}
 	}
+	*/
 	
 	if(mode & RESOURCES){
 		server.resetStats();
