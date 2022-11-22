@@ -58,11 +58,7 @@ Generator::Generator(const Settings & settings) : _settings(settings) {
 	_template.itemFooterCategory = categHtml.substr(endPosNestedCateg + 14, endPosCateg - (endPosNestedCateg + 14));
 	_template.itemArticleCategory = categHtml.substr(insertPosNestedCateg + 16, endPosNestedCateg - (insertPosNestedCateg + 16));
 
-	// Init renderer based on options.
-	// Treat image title as width.
-	_renderer = hoedown_html_renderer_new(hoedown_html_flags(0), 16, 1);
 	_buffer = hoedown_buffer_new(100);
-	
 }
 
 
@@ -328,18 +324,18 @@ std::string Generator::populateSnippet(const Generator::PageArticle & page, cons
 	return html;
 }
 
-std::string Generator::renderContent(const Article & article){
+std::string Generator::renderContentInternal(const Article & article, hoedown_renderer* renderer){
 	// Interpret settings for the renderer.
 	const int options = HOEDOWN_EXT_TABLES | HOEDOWN_EXT_FENCED_CODE | HOEDOWN_EXT_FOOTNOTES |  HOEDOWN_EXT_AUTOLINK | HOEDOWN_EXT_STRIKETHROUGH | HOEDOWN_EXT_UNDERLINE | HOEDOWN_EXT_QUOTE | HOEDOWN_EXT_SUPERSCRIPT;
 	// Allocate buffer for the media_width string (to support %, px, etc.).
 	const auto & opts = _settings.imageWidth();
 	const std::unique_ptr<std::uint8_t[]> mediaOpts = std::make_unique<std::uint8_t[]>(opts.size());
 	std::copy(opts.begin(), opts.end(), mediaOpts.get());
-	
-	hoedown_document * doc = hoedown_document_new(_renderer, static_cast<hoedown_extensions>(options), 16, mediaOpts.get(), opts.size(), int(_settings.imagesLinks()));
+
+	hoedown_document * doc = hoedown_document_new(renderer, static_cast<hoedown_extensions>(options), 16, mediaOpts.get(), opts.size(), int(_settings.imagesLinks()));
 	const std::string & content = article.content();
 	const size_t contentSize = content.size();
-	
+
 	// Make sure the buffer is large enough.
 	if(_buffer->size < contentSize){
 		hoedown_buffer_grow(_buffer, contentSize);
@@ -355,6 +351,15 @@ std::string Generator::renderContent(const Article & article){
 	return result;
 }
 
+std::string Generator::renderContent(const Article & article){
+	// Init renderer based on options.
+	// Treat image title as width.
+	hoedown_renderer* renderer = hoedown_html_renderer_new(hoedown_html_flags(0), 16, 1);
+	// Interpret settings for the renderer.
+	const std::string content = renderContentInternal(article, renderer);
+	hoedown_html_renderer_free(renderer);
+	return content;
+}
 bool Generator::savePage(const Page & page, const fs::path & outputDir, bool force) const {
 	const fs::path outputFile = outputDir / page.location;
 	System::createDirectory(outputFile.parent_path(), false);
@@ -571,7 +576,6 @@ void Generator::generateSitemap(const std::vector<const PageArticle*>& articlePa
 
 Generator::~Generator(){
 	hoedown_buffer_free(_buffer);
-	hoedown_html_renderer_free(_renderer);
 }
 
 std::string::size_type findFirstSentenceEnd(const std::string& src, size_t start){
