@@ -242,7 +242,8 @@ void Generator::renderArticlePage(const Article & article, Generator::PageArticl
 	const std::string content = renderContent(article);
 	page.summary = TextUtilities::summarize(content, _settings.summaryLength() );
 	page.innerContent = content;
-	
+	page.tableOfContent = renderTableOfContent(article);
+
 	// Look for local links.
 	page.files.clear();
 	std::string::size_type srcPos = content.find("src=\"");
@@ -360,6 +361,17 @@ std::string Generator::renderContent(const Article & article){
 	hoedown_html_renderer_free(renderer);
 	return content;
 }
+
+std::string Generator::renderTableOfContent(const Article & article){
+	// Init renderer based on options.
+	// Use only two nesting levels in ToC.
+	hoedown_renderer* renderer = hoedown_html_toc_renderer_new(3);
+	// Interpret settings for the renderer.
+	const std::string toc = renderContentInternal(article, renderer);
+	hoedown_html_renderer_free(renderer);
+	return toc;
+}
+
 bool Generator::savePage(const Page & page, const fs::path & outputDir, bool force) const {
 	const fs::path outputFile = outputDir / page.location;
 	System::createDirectory(outputFile.parent_path(), false);

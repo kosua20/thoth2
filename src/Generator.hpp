@@ -50,6 +50,7 @@ private:
 		const Article* article = nullptr;
 
 		std::string innerContent;
+		std::string tableOfContent;
 		std::string summary;
 	};
 
@@ -79,6 +80,8 @@ private:
 	std::string renderContentInternal(const Article & article, hoedown_renderer* renderer);
 
 	std::string renderContent(const Article & article);
+	
+	std::string renderTableOfContent(const Article & article);
 	
 	void generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, const fs::path& relativePath, const std::string& parentPath, Page& page);
 
