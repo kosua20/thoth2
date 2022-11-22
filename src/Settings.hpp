@@ -52,6 +52,10 @@ public:
 		return _blogTitle;
 	}
 
+	const std::string & tocTitle() const {
+		return _tocTitle;
+	}
+
 	const std::string & imageWidth() const {
 		return _imageWidth;
 	}
@@ -121,6 +125,8 @@ private:
 	std::string _dateStyle = "%m/%d/%Y";
     /// The title of the blog.
 	std::string _blogTitle = "A new blog";
+	/// Title of the table of contents
+	std::string _tocTitle = "Table of contents";
     /// The default image width to use.
 	std::string _imageWidth = "640";
 	/// The SFTP server domain

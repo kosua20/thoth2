@@ -59,6 +59,8 @@ bool Settings::load(){
 				_dateStyle = value;
 			} else if(key == "blogTitle"){
 				_blogTitle = value;
+			} else if(key == "tocTitle"){
+				_tocTitle = value;
 			} else if(key == "imageWidth"){
 				_imageWidth = value;
 			} else if(key == "imagesLinks"){
@@ -141,6 +143,11 @@ std::string Settings::str(bool includeHelp){
 		str << "\n# The title of the blog\n#\t(defaults to \"A new blog\")\n";
 	}
 	str << "blogTitle" << ":\t\t" << _blogTitle << "\n";
+
+	if(includeHelp){
+		str << "\n# The title for the table of contents\n#\t(defaults to \"Table of contents\")\n";
+	}
+	str << "tocTitle" << ":\t\t" << _tocTitle << "\n";
 	
 	if(includeHelp){
 		str << "\n# The default author name to use on each article page\n#\t(defaults to an empty string)\n";

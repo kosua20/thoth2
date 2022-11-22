@@ -307,6 +307,15 @@ void Generator::renderArticlePage(const Article & article, Generator::PageArticl
 		TextUtilities::replace(html, "</head>", "\n" + _template.syntax + "\n</head>");
 	}
 
+	// Insert table of content if available.
+	std::string tocHtml;
+	if(!page.tableOfContent.empty()){
+		tocHtml  = "<details id=\"toc\">";
+		tocHtml += "<summary>" + _settings.tocTitle() + "</summary>";
+		tocHtml += page.tableOfContent + "</details>";
+	}
+	TextUtilities::replace(html, "{#TABLE_OF_CONTENTS}", tocHtml);
+
 	TextUtilities::replace(html, "{#CONTENT}", page.innerContent);
 	page.html = html;
 	
