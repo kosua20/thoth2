@@ -79,7 +79,9 @@ Create your own HTML templates : Thoth expects at least two files in the templat
 - `{#ROOT_LINK}` to insert a link to the root of the blog
 - `{#ARTICLE_BEGIN}` and `{#ARTICLE_END}` in the index.html template to delimitate the HTML corresponding to an article item in the list.
 
-You can also provide a `syntax.html` file containing code for syntax highlighting. It will be inserted in the `<head>` section of each article that contains at least a block of code (`<pre><code>...</code></pre>`).
+You can also provide an `overrides` file listing additional code snippets to insert conditionally based on the presence of a keyword in the generated HTML. Snippets will be inserted in the `<head>` section of each article where the keyword is found. The `overrides` syntax is composed of one override per line, with the following syntax: 
+    `snippetToInsert.html: keywordToSearch`
+For instance: `syntax.html: <pre>` to automatically insert some script when code blocks are present.
 
 ### Config file
 A simple, human-readable config file. No XML, JSON or YAML. Just a simple flat text file, nothing more. It should be put at the root of your blog folder, along with `articles`, `template`, `output` folders. The current settings are :
