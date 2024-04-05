@@ -26,38 +26,80 @@ Generator::Generator(const Settings & settings) : _settings(settings) {
 		// Copy item.
 		System::copyItem(file, dstPath, true);
 	}
-	System::removeItem(settings.outputPath() / "article.html");
-	System::removeItem(settings.outputPath() / "syntax.html");
-	System::removeItem(settings.outputPath() / "categories.html");
-	
-	// Load template data.
-	if(!System::itemExists(settings.templatePath() / "article.html") || !System::itemExists(settings.templatePath() / "index.html")){
-		Log::Error() << "Unable to find the template files article.html and index.html at path " << settings.templatePath() << "." << std::endl;
+
+	// Load template data and cleanup from output dir.
+	// 
+	// Standard template data.
+
+	if( !System::itemExists( settings.templatePath() / "article.html" ) 
+		|| !System::itemExists( settings.templatePath() / "index.html" )
+		|| !System::itemExists( settings.templatePath() / "categories.html" ) ){
+		Log::Error() << "Unable to find the template files article.html, index.html or categories.html at path " << settings.templatePath() << "." << std::endl;
 		return;
 	}
-	_template.article = System::loadStringFromFile(settings.templatePath() / "article.html");
-	const std::string indexHtml   = System::loadStringFromFile(settings.templatePath() / "index.html");
-	const std::string::size_type insertPos = indexHtml.find("{#ARTICLE_BEGIN}");
-	const std::string::size_type endPos = indexHtml.find("{#ARTICLE_END}");
-	_template.indexItem = indexHtml.substr(insertPos + 16, endPos - (insertPos + 16));
-	_template.header = indexHtml.substr(0, insertPos);
-	_template.footer = indexHtml.substr(endPos + 14);
-	if(System::itemExists(settings.templatePath() / "syntax.html")){
-		_template.syntax  = System::loadStringFromFile(settings.templatePath() / "syntax.html");
+
+	_template.article = System::loadStringFromFile( settings.templatePath() / "article.html" );
+
+	const std::string indexHtml = System::loadStringFromFile( settings.templatePath() / "index.html" );
+	const std::string::size_type insertPos = indexHtml.find( "{#ARTICLE_BEGIN}" );
+	const std::string::size_type endPos = indexHtml.find( "{#ARTICLE_END}" );
+	_template.indexItem = indexHtml.substr( insertPos + 16, endPos - ( insertPos + 16 ) );
+	_template.header = indexHtml.substr( 0, insertPos );
+	_template.footer = indexHtml.substr( endPos + 14 );
+
+	// Category listing template.
+	const std::string categHtml = System::loadStringFromFile( settings.templatePath() / "categories.html" );
+	const std::string::size_type insertPosCateg = categHtml.find( "{#CATEGORY_BEGIN}" );
+	const std::string::size_type endPosCateg = categHtml.find( "{#CATEGORY_END}" );
+	const std::string::size_type insertPosNestedCateg = categHtml.find( "{#ARTICLE_BEGIN}" );
+	const std::string::size_type endPosNestedCateg = categHtml.find( "{#ARTICLE_END}" );
+	_template.headerCategory = categHtml.substr( 0, insertPosCateg );
+	_template.footerCategory = categHtml.substr( endPosCateg + 15 );
+	_template.itemHeaderCategory = categHtml.substr( insertPosCateg + 17, insertPosNestedCateg - ( insertPosCateg + 17 ) );
+	_template.itemFooterCategory = categHtml.substr( endPosNestedCateg + 14, endPosCateg - ( endPosNestedCateg + 14 ) );
+	_template.itemArticleCategory = categHtml.substr( insertPosNestedCateg + 16, endPosNestedCateg - ( insertPosNestedCateg + 16 ) );
+
+	System::removeItem( settings.outputPath() / "article.html" );
+	System::removeItem( settings.outputPath() / "categories.html" );
+	System::removeItem( settings.outputPath() / "index.html" );
+
+	// Additional customizations.
+	if( System::itemExists( settings.templatePath() / "overrides" ) ) {
+		std::string overrides = System::loadStringFromFile( settings.templatePath() / "overrides" );
+		TextUtilities::replace( overrides, "\r\n", "\n" );
+		const auto lines = TextUtilities::split( overrides, "\n", true );
+		for( const auto& line : lines ){
+			const std::string str = TextUtilities::trim( line, "\n\r\t " );
+			if( TextUtilities::hasPrefix( str, "#" ) || TextUtilities::hasPrefix( str, "_" ) ){
+				continue;
+			}
+			// Split on first ":"
+			const std::string::size_type fileEnd = line.find( ':' );
+			if( fileEnd == std::string::npos ){
+				continue;
+			}
+			std::string file = line.substr( 0, fileEnd );
+			file = TextUtilities::trim( file, "\t\r\n " );
+			std::string key = line.substr( fileEnd + 1 );
+			key = TextUtilities::trim( key, "\t\r\n " );
+			if( file.empty() || key.empty() ){
+				continue;
+			}
+
+			const fs::path overrideFile = settings.templatePath() / file;
+			if( !System::itemExists( overrideFile ) ){
+				continue;
+			}
+			const std::string overrideContent = System::loadStringFromFile( overrideFile );
+			if( overrideContent.empty() ){
+				continue;
+			}
+			_template.overrides[ key ] = overrideContent;
+		}
+		
+		System::removeItem( settings.outputPath() / "overrides" );
 	}
-
-	//Category listing template.
-	const std::string categHtml   = System::loadStringFromFile(settings.templatePath() / "categories.html");
-	const std::string::size_type insertPosCateg = categHtml.find("{#CATEGORY_BEGIN}");
-	const std::string::size_type endPosCateg = categHtml.find("{#CATEGORY_END}");
-	const std::string::size_type insertPosNestedCateg = categHtml.find("{#ARTICLE_BEGIN}");
-	const std::string::size_type endPosNestedCateg = categHtml.find("{#ARTICLE_END}");
-	_template.headerCategory = categHtml.substr(0, insertPosCateg);
-	_template.footerCategory = categHtml.substr(endPosCateg + 15);
-	_template.itemHeaderCategory = categHtml.substr(insertPosCateg + 17, insertPosNestedCateg - (insertPosCateg + 17));
-	_template.itemFooterCategory = categHtml.substr(endPosNestedCateg + 14, endPosCateg - (endPosNestedCateg + 14));
-	_template.itemArticleCategory = categHtml.substr(insertPosNestedCateg + 16, endPosNestedCateg - (insertPosNestedCateg + 16));
-
+	
 	_buffer = hoedown_buffer_new(100);
 }
 
@@ -303,8 +345,17 @@ void Generator::renderArticlePage(const Article & article, Generator::PageArticl
 	TextUtilities::replace(html, "{#AUTHOR}", article.author());
 	TextUtilities::replace(html, "{#ROOT_LINK}", _settings.siteRoot());
 
-	if(!_template.syntax.empty() && content.find("<pre>") != std::string::npos){
-		TextUtilities::replace(html, "</head>", "\n" + _template.syntax + "\n</head>");
+	// Apply overrides
+	// TODO: we could allow for custom insertion point per-override.
+	std::string accumulateOverrides;
+	for( const auto& _override : _template.overrides ){
+		if( content.find( _override.first ) != std::string::npos ){
+			accumulateOverrides += _override.second + "\n";
+		}
+	}
+	// Append them to end of header.
+	if(!accumulateOverrides.empty() ){
+		TextUtilities::replace( html, "</head>", "\n" + accumulateOverrides + "</head>" );
 	}
 
 	// Insert table of content if available.
@@ -342,7 +393,7 @@ std::string Generator::renderContentInternal(const Article & article, hoedown_re
 	const std::unique_ptr<std::uint8_t[]> mediaOpts = std::make_unique<std::uint8_t[]>(opts.size());
 	std::copy(opts.begin(), opts.end(), mediaOpts.get());
 
-	hoedown_document * doc = hoedown_document_new(renderer, static_cast<hoedown_extensions>(options), 16, mediaOpts.get(), opts.size(), int(_settings.imagesLinks()));
+	hoedown_document * doc = hoedown_document_new(renderer, static_cast<hoedown_extensions>(options), 16, mediaOpts.get(), opts.size(), _settings.imagesLinks() ? 1 : 0);
 	const std::string & content = article.content();
 	const size_t contentSize = content.size();
 

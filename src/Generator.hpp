@@ -64,7 +64,7 @@ private:
 		std::string header;
 		std::string indexItem;
 		std::string article;
-		std::string syntax;
+		std::unordered_map<std::string, std::string> overrides;
 		
 		std::string headerCategory;
 		std::string footerCategory;
