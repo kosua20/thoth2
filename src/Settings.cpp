@@ -197,12 +197,12 @@ std::string Settings::str(bool includeHelp){
 	if(includeHelp){
 		str << "\n# The online URL of the blog, without http:// (for RSS generation)\n";
 	}
-	str << "siteRoot" << ":\t\t" << _siteRoot;
+	str << "siteRoot" << ":\t\t" << _siteRoot << "\n";
 
 	if(includeHelp){
 		str << "\n# The URL to use as parent link on the main page,\n";
 	}
-	str << "externalLink" << ":\t\t" << _externalLink;
+	str << "externalLink" << ":\t\t" << _externalLink << "\n";
 
 	if(includeHelp){
 		str << "\n# The number of articles to display in the RSS feed\n#\t(defaults to 10)\n";
