@@ -90,11 +90,14 @@ Generator::Generator(const Settings & settings) : _settings(settings) {
 			if( !System::itemExists( overrideFile ) ){
 				continue;
 			}
+			System::removeItem( settings.outputPath() / file );
+			
 			const std::string overrideContent = System::loadStringFromFile( overrideFile );
 			if( overrideContent.empty() ){
 				continue;
 			}
 			_template.overrides[ key ] = overrideContent;
+
 		}
 		
 		System::removeItem( settings.outputPath() / "overrides" );
@@ -162,7 +165,7 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 	if(_settings.calendarIndexPages()){
 
 		// Sort published pages by year and month.
-		std::map<size_t, std::map<size_t, std::vector<const PageArticle*>>> calendar;
+		std::unordered_map<size_t, std::unordered_map<size_t, std::vector<const PageArticle*>>> calendar;
 		for(const PageArticle* page: publishedPages){
 			const Article& article = *(page->article);
 			const Date& date = article.date().value();
@@ -200,7 +203,7 @@ void Generator::process(const std::vector<Article> & articles, uint mode){
 	// Categories.
 
 	// Find all categories that are public, and accumulate pages.
-	std::map<std::string, std::vector<const PageArticle*>> categoryArticles;
+	std::unordered_map<std::string, std::vector<const PageArticle*>> categoryArticles;
 
 	for(const PageArticle* page: publishedPages){
 		const Article& article = *(page->article);
@@ -491,7 +494,7 @@ void Generator::generateIndexPage(const std::vector<const PageArticle*>& pages, 
 	page.html = html;
 }
 
-void Generator::generateCategoriesPage(const std::map<std::string, std::vector<const PageArticle*>>& categoryArticles, const Categories& categories, const std::string& title, const fs::path& relativePath, const fs::path& parentPath, Generator::Page& page){
+void Generator::generateCategoriesPage(const std::unordered_map<std::string, std::vector<const PageArticle*>>& categoryArticles, const Categories& categories, const std::string& title, const fs::path& relativePath, const fs::path& parentPath, Generator::Page& page){
 
 	// Sort categories.
 	std::vector<std::string> keywordIDs;

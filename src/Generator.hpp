@@ -2,7 +2,7 @@
 
 #include "Common.hpp"
 #include "Articles.hpp"
-#include <map>
+#include <unordered_map>
 
 struct hoedown_buffer;
 struct hoedown_renderer;
@@ -73,7 +73,7 @@ private:
 		std::string itemArticleCategory;
 	};
 
-	using Categories = std::map<std::string, Category>;
+	using Categories = std::unordered_map<std::string, Category>;
 	
 	void renderArticlePage(const Article & article, PageArticle & page, const Categories& categories);
 
@@ -85,7 +85,7 @@ private:
 	
 	void generateIndexPage(const std::vector<const PageArticle*>& pages, const std::string& title, const fs::path& relativePath, const std::string& parentPath, Page& page);
 
-	void generateCategoriesPage(const std::map<std::string, std::vector<const PageArticle*>>& categoryArticles, const Categories& categories, const std::string& title,  const fs::path& relativePath, const fs::path& parentPath, Generator::Page& page);
+	void generateCategoriesPage(const std::unordered_map<std::string, std::vector<const PageArticle*>>& categoryArticles, const Categories& categories, const std::string& title,  const fs::path& relativePath, const fs::path& parentPath, Generator::Page& page);
 
 	void generateRssFeed(const std::vector<const PageArticle*>& pages, Generator::Page& feed);
 
