@@ -36,13 +36,17 @@ typedef enum hoedown_extensions {
 	HOEDOWN_EXT_MATH_EXPLICIT = (1 << 13),
 
 	/* negative flags */
-	HOEDOWN_EXT_DISABLE_INDENTED_CODE = (1 << 14)
+	HOEDOWN_EXT_DISABLE_INDENTED_CODE = (1 << 14),
+
+	/* custom flags */
+	HOEDOWN_EXT_GALLERIES = (1 << 15),
 } hoedown_extensions;
 
 #define HOEDOWN_EXT_BLOCK (\
 	HOEDOWN_EXT_TABLES |\
 	HOEDOWN_EXT_FENCED_CODE |\
-	HOEDOWN_EXT_FOOTNOTES )
+	HOEDOWN_EXT_FOOTNOTES |\
+	HOEDOWN_EXT_GALLERIES )
 
 #define HOEDOWN_EXT_SPAN (\
 	HOEDOWN_EXT_AUTOLINK |\
@@ -63,7 +67,9 @@ typedef enum hoedown_extensions {
 
 typedef enum hoedown_list_flags {
 	HOEDOWN_LIST_ORDERED = (1 << 0),
-	HOEDOWN_LI_BLOCK = (1 << 1)	/* <li> containing block data */
+	HOEDOWN_LI_BLOCK = (1 << 1),	/* <li> containing block data */
+	HOEDOWN_LIST_RESERVED = (1 << 3), /* see document.c */
+	HOEDOWN_LIST_GALLERY = (1 << 4),
 } hoedown_list_flags;
 
 typedef enum hoedown_table_flags {

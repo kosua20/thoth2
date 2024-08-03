@@ -270,9 +270,29 @@ rndr_list(hoedown_buffer *ob, const hoedown_buffer *content, hoedown_list_flags 
 {
 	(void)data;
 	if (ob->size) hoedown_buffer_putc(ob, '\n');
-	hoedown_buffer_put(ob, (const uint8_t *)(flags & HOEDOWN_LIST_ORDERED ? "<ol>\n" : "<ul>\n"), 5);
+	// Header
+	if(flags & HOEDOWN_LIST_ORDERED){
+		HOEDOWN_BUFPUTSL(ob, "<ol>\n");
+	} else if(flags & HOEDOWN_LIST_GALLERY){
+		HOEDOWN_BUFPUTSL(ob, "<section class=\"gallery\">\n");
+		HOEDOWN_BUFPUTSL(ob, "<div class=\"gallery_track\">\n");
+		HOEDOWN_BUFPUTSL(ob, "<ul class=\"gallery_list\">\n");
+	} else {
+		HOEDOWN_BUFPUTSL(ob, "<ul>\n");
+	}
+
 	if (content) hoedown_buffer_put(ob, content->data, content->size);
-	hoedown_buffer_put(ob, (const uint8_t *)(flags & HOEDOWN_LIST_ORDERED ? "</ol>\n" : "</ul>\n"), 6);
+
+	// Footer
+	if(flags & HOEDOWN_LIST_ORDERED){
+		HOEDOWN_BUFPUTSL(ob, "</ol>\n");
+	} else if(flags & HOEDOWN_LIST_GALLERY){
+		HOEDOWN_BUFPUTSL(ob, "</ul>\n");
+		HOEDOWN_BUFPUTSL(ob, "</div>\n");
+		HOEDOWN_BUFPUTSL(ob, "</section>\n");
+	} else {
+		HOEDOWN_BUFPUTSL(ob, "</ul>\n");
+	}
 }
 
 static void
@@ -280,7 +300,11 @@ rndr_listitem(hoedown_buffer *ob, const hoedown_buffer *content, hoedown_list_fl
 {
 	(void)data;
 	(void)flags;
-	HOEDOWN_BUFPUTSL(ob, "<li>");
+	if(flags & HOEDOWN_LIST_GALLERY){
+		HOEDOWN_BUFPUTSL(ob, "<li class=\"gallery_item\">");
+	} else {
+		HOEDOWN_BUFPUTSL(ob, "<li>");
+	}
 	if (content) {
 		size_t size = content->size;
 		while (size && content->data[size - 1] == '\n')

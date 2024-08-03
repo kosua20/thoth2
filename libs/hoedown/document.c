@@ -1630,7 +1630,7 @@ prefix_oli(uint8_t *data, size_t size)
 	return i + 2;
 }
 
-/* prefix_uli • returns ordered list item prefix */
+/* prefix_uli • returns unordered list item prefix */
 static size_t
 prefix_uli(uint8_t *data, size_t size)
 {
@@ -1642,6 +1642,27 @@ prefix_uli(uint8_t *data, size_t size)
 
 	if (i + 1 >= size ||
 		(data[i] != '*' && data[i] != '+' && data[i] != '-') ||
+		data[i + 1] != ' ')
+		return 0;
+
+	if (is_next_headerline(data + i, size - i))
+		return 0;
+
+	return i + 2;
+}
+
+/* prefix_gallery • returns gallery item prefix */
+static size_t
+prefix_gallery(uint8_t *data, size_t size)
+{
+	size_t i = 0;
+
+	if (i < size && data[i] == ' ') i++;
+	if (i < size && data[i] == ' ') i++;
+	if (i < size && data[i] == ' ') i++;
+
+	if (i + 1 >= size ||
+		(data[i] != '@') ||
 		data[i + 1] != ' ')
 		return 0;
 
@@ -1879,7 +1900,10 @@ parse_listitem(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t 
 	while (orgpre < 3 && orgpre < size && data[orgpre] == ' ')
 		orgpre++;
 
+	int has_ext_galleries = (doc->ext_flags & HOEDOWN_EXT_GALLERIES) != 0;
 	beg = prefix_uli(data, size);
+	if (!beg && has_ext_galleries)
+		beg = prefix_gallery(data, size);
 	if (!beg)
 		beg = prefix_oli(data, size);
 
@@ -1901,7 +1925,7 @@ parse_listitem(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t 
 
 	/* process the following lines */
 	while (beg < size) {
-		size_t has_next_uli = 0, has_next_oli = 0;
+		size_t has_next_uli = 0, has_next_oli = 0, has_next_gallery = 0;
 
 		end++;
 
@@ -1932,19 +1956,21 @@ parse_listitem(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t 
 		if (!in_fence) {
 			has_next_uli = prefix_uli(data + beg + i, end - beg - i);
 			has_next_oli = prefix_oli(data + beg + i, end - beg - i);
+			if(has_ext_galleries)
+				has_next_gallery = prefix_gallery(data + beg + i, end - beg - i);
 		}
 
 		/* checking for a new item */
-		if ((has_next_uli && !is_hrule(data + beg + i, end - beg - i)) || has_next_oli) {
+		if (((has_next_uli || has_next_gallery) && !is_hrule(data + beg + i, end - beg - i)) || has_next_oli) {
 			if (in_empty)
 				has_inside_empty = 1;
 
 			/* the following item must have the same (or less) indentation */
 			if (pre <= orgpre) {
 				/* if the following item has different list type, we end this list */
-				if (in_empty && (
-					((*flags & HOEDOWN_LIST_ORDERED) && has_next_uli) ||
-					(!(*flags & HOEDOWN_LIST_ORDERED) && has_next_oli)))
+				hoedown_list_flags new_flags = (has_next_oli ? HOEDOWN_LIST_ORDERED : (has_next_gallery ? HOEDOWN_LIST_GALLERY : 0));
+				hoedown_list_flags type_mask = (HOEDOWN_LIST_ORDERED | HOEDOWN_LIST_GALLERY);
+				if (in_empty && ( (*flags & type_mask) != new_flags))
 					*flags |= HOEDOWN_LI_END;
 
 				break;
@@ -2541,6 +2567,10 @@ parse_block(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t siz
 
 		else if (prefix_uli(txt_data, end))
 			beg += parse_list(ob, doc, txt_data, end, 0);
+
+		else if ((doc->ext_flags & HOEDOWN_EXT_GALLERIES) != 0 &&
+				 prefix_gallery(txt_data, end))
+			beg += parse_list(ob, doc, txt_data, end, HOEDOWN_LIST_GALLERY);
 
 		else if (prefix_oli(txt_data, end))
 			beg += parse_list(ob, doc, txt_data, end, HOEDOWN_LIST_ORDERED);
