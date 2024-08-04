@@ -2,7 +2,7 @@
 
 ![{#Thoth}](thoth_circle.png)
 
-## Meet Thoth  
+## Meet Thoth
 
 {#Thoth} (or more commonly Thoth) is a simple static blog generator written in C++.   
 Just write your articles in Markdown, put them in a directory, point Thoth to this directory, add a template, SFTP settings and an output directory, and *voilà* !
@@ -29,7 +29,7 @@ For drafts, just replace the date on the second line by the mention `draft`. Tho
 
 Once you have finished writing your article, run the `thoth --path /path/to/your/blog/config --scribe` command to automatically update the output and upload it. Do the same if you want to preview a draft online, or just call `thoth --path /path/to/your/blog/config --generate` to generate it in the output folder.
 
-## Commands 
+## Commands
 
 - `--p,--path <path to config>`  
     Path to the blog configuration file, non-relative.
@@ -135,6 +135,9 @@ The password for the SFTP access is stored in the system user keychain. See the 
 
 
 ### Extended markdown parsing
+
+#### Footnotes
+
 You can create reference footnotes using the common format :
 
     This is a sentence[^refnote]
@@ -143,17 +146,62 @@ You can create reference footnotes using the common format :
 
 Use the classes `footnote-link` and `footnote` in your template to style the footnotes links and content, respectively.
 
+#### Media
+
 You can also easily manage your images size in markdown, either by setting a default width, or defining it using the following syntax, replacing the title: 
 
     ![alt text](path/to/image.png "800")
 
 Title and caption will then use the alt text.
 
-Pictures from your articles which are stored on your computer are also retrieved by Thoth and copied in article-specific folders, for an easier management.
-
 You can also integrate HTML5 videos in your articles using the following syntax:
 
     ?[alt text](path/to/video.mp4 "800")    
+
+Pictures and videos from your articles which are stored on your computer are also retrieved by Thoth and copied in article-specific folders, for an easier management.
+
+#### Comparisons
+
+Side-by-side comparisons between pairs of images can be declared with:
+
+    %![Before text](path/to/img_before.png)![After text](path/to/image_after.png)
+
+The two images will be placed inside a section with the class `comparison`, and will each have a `data-label` attribute containing its text (alongside the usual title and alt). This layout is inspired by [juxtapose.js](https://github.com/NUKnightLab/juxtapose).
+
+#### Galleries
+
+A list can be turned into a gallery with a set of additional wrapping divs by using `@` as bullet point. The following:
+
+```
+@ ![Image 0](path/to/img0.png) Description 0
+@ ![Image 1](path/to/img1.png) Description 1
+@ ![Image 2](path/to/img2.png) Description 2
+```
+
+will turn into
+
+```
+<section class="gallery">
+    <div class="gallery_track">
+        <ul class="gallery_list">
+            <li class="gallery_item">
+                <img src="path/to/img0.png alt="Image 0"/>
+                <p>Description 0</p>
+            </li>
+            <li class="gallery_item">
+                <img src="path/to/img1.png alt="Image 1"/>
+                <p>Description 1</p>
+            </li>
+            <li class="gallery_item">
+                <img src="path/to/img2.png alt="Image 2"/>
+                <p>Description 2</p>
+            </li>
+        </ul>
+    </div>
+</section>
+```
+
+The four classes `gallery`, `gallery_track`, `gallery_list`, `gallery_item` can be used for styling and modifications. This layout is inspired by [splide.js](https://splidejs.com).
 
 ### Comments and ignored files
 In the config file, lines beginning with a `#` or a `_` will be ignored.  
