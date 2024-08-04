@@ -390,7 +390,7 @@ std::string Generator::populateSnippet(const Generator::PageArticle & page, cons
 
 std::string Generator::renderContentInternal(const Article & article, hoedown_renderer* renderer){
 	// Interpret settings for the renderer.
-	const int options = HOEDOWN_EXT_TABLES | HOEDOWN_EXT_FENCED_CODE | HOEDOWN_EXT_FOOTNOTES |  HOEDOWN_EXT_AUTOLINK | HOEDOWN_EXT_STRIKETHROUGH | HOEDOWN_EXT_UNDERLINE | HOEDOWN_EXT_QUOTE | HOEDOWN_EXT_SUPERSCRIPT;
+	const int options = HOEDOWN_EXT_TABLES | HOEDOWN_EXT_FENCED_CODE | HOEDOWN_EXT_FOOTNOTES | HOEDOWN_EXT_GALLERIES |  HOEDOWN_EXT_COMPARISONS | HOEDOWN_EXT_AUTOLINK | HOEDOWN_EXT_STRIKETHROUGH | HOEDOWN_EXT_UNDERLINE | HOEDOWN_EXT_QUOTE | HOEDOWN_EXT_SUPERSCRIPT;
 	// Allocate buffer for the media_width string (to support %, px, etc.).
 	const auto & opts = _settings.imageWidth();
 	const std::unique_ptr<std::uint8_t[]> mediaOpts = std::make_unique<std::uint8_t[]>(opts.size());
