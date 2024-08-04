@@ -386,6 +386,28 @@ rndr_raw_block(hoedown_buffer *ob, const hoedown_buffer *text, const hoedown_ren
 	hoedown_buffer_putc(ob, '\n');
 }
 
+
+static void
+rndr_comparison(hoedown_buffer *ob, const hoedown_buffer *content, const hoedown_renderer_data *data)
+{
+	(void)data;
+	size_t i = 0;
+
+	if (ob->size) hoedown_buffer_putc(ob, '\n');
+
+	if (!content || !content->size)
+		return;
+
+	while (i < content->size && isspace(content->data[i])) i++;
+
+	if (i == content->size)
+		return;
+
+	HOEDOWN_BUFPUTSL(ob, "<section class=\"comparison\">");
+	hoedown_buffer_put(ob, content->data + i, content->size - i);
+	HOEDOWN_BUFPUTSL(ob, "</section>\n");
+}
+
 static int
 rndr_triple_emphasis(hoedown_buffer *ob, const hoedown_buffer *content, const hoedown_renderer_data *data)
 {
@@ -406,13 +428,15 @@ rndr_hrule(hoedown_buffer *ob, const hoedown_renderer_data *data)
 }
 
 static int
-rndr_image(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer *title, const hoedown_buffer *alt, const hoedown_renderer_data *data, const hoedown_buffer *media_opts, int images_link)
+rndr_image(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer *title, const hoedown_buffer *alt, const hoedown_renderer_data *data, const hoedown_buffer *media_opts, int images_link, int in_figure, int add_label)
 {
 	hoedown_html_renderer_state *state = data->opaque;
 	if (!link || !link->size) return 0;
 
 	// Always wrap in figure.
-	HOEDOWN_BUFPUTSL(ob, "<figure>\n");
+	if(in_figure){
+		HOEDOWN_BUFPUTSL(ob, "<figure>\n");
+	}
 
 	if(images_link > 0){
 		HOEDOWN_BUFPUTSL(ob, "<a href=\"");
@@ -429,6 +453,10 @@ rndr_image(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer 
 			// Re-use alt as a title.
 			HOEDOWN_BUFPUTSL(ob, "\" title=\"");
 			escape_html(ob, alt->data, alt->size);
+			if(add_label){
+				HOEDOWN_BUFPUTSL(ob, "\" data-label=\"");
+				escape_html(ob, alt->data, alt->size);
+			}
 		}
 	}
 	
@@ -444,8 +472,11 @@ rndr_image(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer 
 	if(state->title_as_size == 0 && title && title->size){
 		HOEDOWN_BUFPUTSL(ob, "\" title=\"");
 		escape_html(ob, title->data, title->size);
+		if(add_label){
+			HOEDOWN_BUFPUTSL(ob, "\" data-label=\"");
+			escape_html(ob, title->data, title->size);
+		}
 	}
-	
 
 	hoedown_buffer_puts(ob, USE_XHTML(state) ? "\"/>" : "\">");
 	
@@ -453,17 +484,19 @@ rndr_image(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer 
 		HOEDOWN_BUFPUTSL(ob, "\n</a>");
 	}
 
-	// Always wrap in figure.
-	if(state->title_as_size && alt && alt->size){
-		HOEDOWN_BUFPUTSL(ob, "\n<figcaption>");
-		escape_html(ob, alt->data, alt->size);
-		HOEDOWN_BUFPUTSL(ob, "</figcaption>");
-	} else if(state->title_as_size == 0 && title && title->size){
-		HOEDOWN_BUFPUTSL(ob, "\n<figcaption>");
-		escape_html(ob, title->data, title->size);
-		HOEDOWN_BUFPUTSL(ob, "</figcaption>");
+	if(in_figure){
+		// Always wrap in figure.
+		if(state->title_as_size && alt && alt->size){
+			HOEDOWN_BUFPUTSL(ob, "\n<figcaption>");
+			escape_html(ob, alt->data, alt->size);
+			HOEDOWN_BUFPUTSL(ob, "</figcaption>");
+		} else if(state->title_as_size == 0 && title && title->size){
+			HOEDOWN_BUFPUTSL(ob, "\n<figcaption>");
+			escape_html(ob, title->data, title->size);
+			HOEDOWN_BUFPUTSL(ob, "</figcaption>");
+		}
+		HOEDOWN_BUFPUTSL(ob, "\n</figure>");
 	}
-	HOEDOWN_BUFPUTSL(ob, "\n</figure>");
 
 	return 1;
 }
@@ -772,6 +805,7 @@ hoedown_html_toc_renderer_new(int nesting_level)
 		NULL,
 		NULL,
 		NULL,
+		NULL,
 
 		NULL,
 		rndr_codespan,
@@ -836,6 +870,7 @@ hoedown_html_renderer_new(hoedown_html_flags render_flags, int nesting_level, in
 		rndr_footnotes,
 		rndr_footnote_def,
 		rndr_raw_block,
+		rndr_comparison,
 
 		rndr_autolink,
 		rndr_codespan,

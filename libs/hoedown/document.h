@@ -40,13 +40,15 @@ typedef enum hoedown_extensions {
 
 	/* custom flags */
 	HOEDOWN_EXT_GALLERIES = (1 << 15),
+	HOEDOWN_EXT_COMPARISONS = (1 << 16),
 } hoedown_extensions;
 
 #define HOEDOWN_EXT_BLOCK (\
 	HOEDOWN_EXT_TABLES |\
 	HOEDOWN_EXT_FENCED_CODE |\
 	HOEDOWN_EXT_FOOTNOTES |\
-	HOEDOWN_EXT_GALLERIES )
+	HOEDOWN_EXT_GALLERIES |\
+	HOEDOWN_EXT_COMPARISONS )
 
 #define HOEDOWN_EXT_SPAN (\
 	HOEDOWN_EXT_AUTOLINK |\
@@ -120,6 +122,7 @@ struct hoedown_renderer {
 	void (*footnotes)(hoedown_buffer *ob, const hoedown_buffer *content, const hoedown_renderer_data *data);
 	void (*footnote_def)(hoedown_buffer *ob, const hoedown_buffer *content, unsigned int num, const hoedown_renderer_data *data);
 	void (*blockhtml)(hoedown_buffer *ob, const hoedown_buffer *text, const hoedown_renderer_data *data);
+	void (*comparison)(hoedown_buffer *ob, const hoedown_buffer *text, const hoedown_renderer_data *data);
 
 	/* span level callbacks - NULL or return 0 prints the span verbatim */
 	int (*autolink)(hoedown_buffer *ob, const hoedown_buffer *link, hoedown_autolink_type type, const hoedown_renderer_data *data);
@@ -129,7 +132,7 @@ struct hoedown_renderer {
 	int (*underline)(hoedown_buffer *ob, const hoedown_buffer *content, const hoedown_renderer_data *data);
 	int (*highlight)(hoedown_buffer *ob, const hoedown_buffer *content, const hoedown_renderer_data *data);
 	int (*quote)(hoedown_buffer *ob, const hoedown_buffer *content, const hoedown_renderer_data *data);
-	int (*image)(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer *title, const hoedown_buffer *alt, const hoedown_renderer_data *data, const hoedown_buffer *media_opts, int images_link);
+	int (*image)(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer *title, const hoedown_buffer *alt, const hoedown_renderer_data *data, const hoedown_buffer *media_opts, int images_link, int in_figure, int add_label);
 	int (*video)(hoedown_buffer *ob, const hoedown_buffer *link, const hoedown_buffer *title, const hoedown_buffer *alt, const hoedown_renderer_data *data, const hoedown_buffer *media_opts);
 	int (*linebreak)(hoedown_buffer *ob, const hoedown_renderer_data *data);
 	int (*link)(hoedown_buffer *ob, const hoedown_buffer *content, const hoedown_buffer *link, const hoedown_buffer *title, const hoedown_renderer_data *data);

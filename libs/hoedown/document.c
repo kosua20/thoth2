@@ -79,6 +79,7 @@ static size_t char_autolink_www(hoedown_buffer *ob, hoedown_document *doc, uint8
 static size_t char_link(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t offset, size_t size);
 static size_t char_image(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t offset, size_t size);
 static size_t char_video(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t offset, size_t size);
+static size_t char_comparison(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t offset, size_t size);
 static size_t char_superscript(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t offset, size_t size);
 static size_t char_math(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t offset, size_t size);
 
@@ -98,7 +99,8 @@ enum markdown_char_t {
 	MD_CHAR_SUPERSCRIPT,
 	MD_CHAR_QUOTE,
 	MD_CHAR_MATH,
-	MD_CHAR_VIDEO
+	MD_CHAR_VIDEO,
+	MD_CHAR_COMPARISON,
 };
 
 static char_trigger markdown_char_ptrs[] = {
@@ -117,7 +119,8 @@ static char_trigger markdown_char_ptrs[] = {
 	&char_superscript,
 	&char_quote,
 	&char_math,
-	&char_video
+	&char_video,
+	&char_comparison
 };
 
 struct hoedown_document {
@@ -132,7 +135,8 @@ struct hoedown_document {
 	hoedown_extensions ext_flags;
 	size_t max_nesting;
 	int in_link_body;
-	
+	int in_comparison;
+
 	hoedown_buffer * media_opts;
 	int images_link;
 };
@@ -1132,6 +1136,60 @@ char_video(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t offs
 	return ret + 1;
 }
 
+static size_t
+char_comparison(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t offset, size_t size) {
+	size_t ret_0;
+	size_t ret_1;
+	size_t next_start;
+
+	if (size < 3 || data[1] != '!' || data[2] != '[') return 0;
+	if(!doc->md.comparison)
+		return 0;
+
+	hoedown_buffer *tmp = newbuf(doc, BUFFER_BLOCK);
+
+	// Parse first image.
+	doc->in_comparison = 1;
+	ret_0 = char_image(tmp, doc, data + 1, offset + 1, size - 1);
+	doc->in_comparison = 0;
+
+	if (!ret_0){
+		popbuf(doc, BUFFER_BLOCK);
+		return 0;
+	}
+	++ret_0;
+
+	// Skip whitespace
+	while(ret_0 < size && (data[ret_0] == ' ')){
+		++ret_0;
+	}
+
+	next_start = ret_0;
+	data += next_start;
+	offset += next_start;
+	size -= next_start;
+
+	// Expect second image.
+	if (size < 2 || data[0] != '!' || data[1] != '['){
+		popbuf(doc, BUFFER_BLOCK);
+		return 0;
+	}
+
+	doc->in_comparison = 1;
+	ret_1 = char_image(tmp, doc, data, offset, size);
+	doc->in_comparison = 0;
+
+	if (!ret_1){
+		popbuf(doc, BUFFER_BLOCK);
+		return 0;
+	}
+
+	doc->md.comparison(ob, tmp, &doc->data);
+
+	popbuf(doc, BUFFER_BLOCK);
+	return ret_0 + ret_1;
+}
+
 /* char_link • '[': parsing a link, a footnote or an image, a video */
 static size_t
 char_link(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t offset, size_t size)
@@ -1346,7 +1404,10 @@ char_link(hoedown_buffer *ob, hoedown_document *doc, uint8_t *data, size_t offse
 
 	/* calling the relevant rendering function */
 	if (is_img) {
-		ret = doc->md.image(ob, u_link, title, content, &doc->data, doc->media_opts, doc->images_link);
+		int image_in_link = doc->images_link && !doc->in_comparison;
+		int image_in_figure = !doc->in_comparison;
+		int add_image_label = doc->in_comparison;
+		ret = doc->md.image(ob, u_link, title, content, &doc->data, doc->media_opts, image_in_link, image_in_figure, add_image_label);
 	} else if (is_vid) {
 		ret = doc->md.video(ob, u_link, title, content, &doc->data, doc->media_opts);
 	} else {
@@ -2887,6 +2948,9 @@ hoedown_document_new(
 		doc->active_char['!'] = MD_CHAR_IMAGE;
 		doc->active_char['?'] = MD_CHAR_VIDEO;
 	}
+	if(extensions & HOEDOWN_EXT_COMPARISONS && doc->md.comparison){
+		doc->active_char['%'] = MD_CHAR_COMPARISON;
+	}
 
 	doc->active_char['<'] = MD_CHAR_LANGLE;
 	doc->active_char['\\'] = MD_CHAR_ESCAPE;
@@ -2911,7 +2975,8 @@ hoedown_document_new(
 	doc->ext_flags = extensions;
 	doc->max_nesting = max_nesting;
 	doc->in_link_body = 0;
-	
+	doc->in_comparison = 0;
+
 	doc->media_opts = hoedown_buffer_new(media_size);
 	hoedown_buffer_set(doc->media_opts, media_opts, media_size);
 	doc->images_link = images_link;
