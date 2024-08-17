@@ -77,6 +77,7 @@ Create your own HTML templates : Thoth expects at least two files in the templat
 - `{#CONTENT}` to insert the content of an article
 - `{#SUMMARY}` to insert a shortened version of an article (200-300 characters max.)
 - `{#ROOT_LINK}` to insert a link to the root of the blog
+- `{#DATE_LINK}` to insert a link to the year index page if it exists
 - `{#ARTICLE_BEGIN}` and `{#ARTICLE_END}` in the index.html template to delimitate the HTML corresponding to an article item in the list.
 
 You can also provide an `overrides` file listing additional code snippets to insert conditionally based on the presence of a keyword in the generated HTML. Snippets will be inserted in the `<head>` section of each article where the keyword is found. The `overrides` syntax is composed of one override per line, with the following syntax: 

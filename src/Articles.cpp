@@ -56,7 +56,7 @@ Date Date::currentDate(){
 
 
 Article::Article(const std::string & title, const std::optional<Date> & date, const std::string & author, const std::string & content){
-	_title = title;
+	_title = TextUtilities::trim(title, " ");
 	_date = date;
 	_author = author;
 	_content = content;
